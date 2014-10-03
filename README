@@ -1,0 +1,15 @@
+Usage:
+
+Database:
+
+To make a database of all KEPLER dump files in a directory and all its subdirectories:
+
+python /path/to/update_db.py
+
+This database can be accessed with SQLAlchemy as in plot_cores.py
+
+Plotting:
+
+These are example scripts for use and should be modified as desired.
+
+plot_abundances

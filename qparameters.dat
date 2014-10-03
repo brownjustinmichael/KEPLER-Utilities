@@ -1,0 +1,148 @@
+1	dt	float	s	KEPLER timestep.	
+2	jm	integer	-	Number of zones.	
+3	dtold	float	s	KEPLER timestep used for the previous cycle.	
+4	ncyc	integer	-	KEPLER cycle number.	
+5	fcr	float	-	Maximum fractional zonal radius change since the last iteration.	
+6	fct	float	-	Maximum fractional zonal temperature change since the last iteration.	
+7	iter	integer	-	Number of iterations taken for convergence.	
+8	told	float	s	Time at the beginning of the last timestep.	
+9	tfcr	float	-	Total maximum fractional zonal radius change during current cycle.	
+10	tfct	float	-	Total maximum fractional zonal temperature change during current cycle.	
+11	fcl	float	-	Maximum fractional zonal luminosity change since the last iteration.	
+12	tfcl	float	-	Total maximum fractional zonal luminosity change since the last iteration.	
+13	idtcon	integer	-	Symbol of the ion most limiting the current KEPLER timestep.	
+14	imax	integer	-	Total number of ions in the APPROX network (usually 19).	
+15	nnet	integer	-	Number of ion networks specified.	
+16	numit	integer	-	Total number of ions specified in the generator (usually 19).	
+17	totm	float	g	Current total amount of mass in the problem (incl. summ0 (p 61)).	
+18	nreac	integer	-	Number of nuclear reactions edited (ions only &#8211; usually 29).	
+19	itert	integer	-	Total number of iterations since problem generation.	
+20	jfcr	integer	-	Zone with largest fractional radius change since the last iteration.	
+21	jfct	integer	-	Zone with largest fractional temperature change since the last iteration.	
+22	jfcl	integer	-	Zone with largest fractional luminosity change since the last iteration.	
+23	snuc	float	erg/g*s	Current nuclear energy generation rate from last call to subroutine	SDOT.	
+24	s0exp	float	-	
+25	xlumn	float	erg/s	Neutrino luminosity.	
+26	enini	float	erg	Total initial internal energy.	
+27	enink	float	erg	Total initial kinetic energy.	
+28	eninp	float	erg	Total initial potential energy.	
+29	enint	float	erg	Total initial energy \(=\) enini (q 26) \(+\) enink (q 27) \(+\) eninp (q 28).	
+30	ensc	float	erg	Total energy deposited so far from input &#8220;source&#8221;.  See xlum0 (p 62).	
+31	eni	float	erg	Total internal energy.	
+32	enk	float	erg	Total kinetic energy.	
+33	enp	float	erg	Total potential energy.	
+34	ent	float	erg	Total current energy \(=\) eni (q 31) \(+\) enk (q 32) \(+\) enp (q 33).	
+35	epro	float	erg	Total net energy produced so far by nuclear reactions less neutrino losses.	
+36	enes	float	erg	Total non-neutrino energy that has so far escaped from the star&#8217;s surface.	
+37	enc	float	erg	Energy check.	
+38	enscd	float	erg/s	Rate of energy deposition by input &#8220;source&#8221;.  See xlum0 (p 62).	
+39	enid	float	erg/s	Rate of change in the total internal energy.	
+40	enkd	float	erg/s	Rate of change in the total kinetic energy.	
+41	enpd	float	erg/s	Rate of change in the total potential energy.	
+42	entd	float	erg/s	Rate of change in the total energy.	
+43	eprod	float	erg/s	Total rate of nuclear energy production.	
+44	enesd	float	erg/s	Total rate of energy escape from the star (in photons).	
+45	encd	float	erg/s	Total rate of change in the energy check.	
+46	xlum	float	erg/s	Surface luminosity in electromagnetic radiation (\(\equiv\) enesd).	
+47	radius	float	cm	Photospheric radius corresponding to radius with \(2/3\) optical depth.	
+48	teff	float	K	Effective surface temperature.	
+49	ncycb	integer	-	Current cycle number used by the BURN coprocessor (should be same as ncyc).	
+50	ncycbt	integer	-	Number of cycles since BURN co-processing was initiated (usually = ncyc).	
+51	nburnz	integer	-	Number of zones co-processed by BURN during current KEPLER cycle.	
+52	nburnzt	integer	-	Total number of zones co-processed by BURN since problem generation.	
+53	imaxb	integer	-	Number of isotopes in the currently specified BURN network (typically 149).	
+54	nnetb	integer	-	Number of specified BURN isotopic networks (usually 1).	
+55	numitb	integer	-	Total number of isotopes specified in the BURN generator (typically 149).	
+56	jlm	integer	-	Number of zones at the end of the last KEPLER cycle.	
+57	jbmax	integer	-	Maximum zone number for which BURN co-processing is now being done.	
+58	dtsub	float	-	Length of a BURN co-processing/BURN ion convection subcycle (see nsubcycm (p 264)).	
+59	jpist	integer	-	Index of the piston position now being utilized (see Chapter XXX and CYCLE).	
+60	jpistm	integer	-	Total number of piston positions specified in the LINK file (see Chapter XXX).	
+61	velocty0	float	cm/s	Velocity of inner problem boundary due to specified piston (see Chapt. XXX).	
+62	tbounce	float	s	Core bounce time.  Set by the nflux card in the LINK file (See Chapter XXX).	
+63	fluxnu0	float	-	Neutrino flux parameter. Set by the nflux card in the LINK file (See Chapter XXX).	
+64	fluxnua	float	-	Neutrino flux parameter. Set by the nflux card in the LINK file (See Chapter XXX).	
+65	chi0	float	-	Neutrino flux parameter. Set by the nflux card in the LINK file (See Chapter XXX).	
+66	fluxnub	float	-	Neutrino flux parameter. Set by the nflux card in the LINK file (See Chapter XXX).	
+67	chil	float	-	Neutrino flux parameter. Set by the nflux card in the LINK file (See Chapter XXX).	
+68	fluxnuc	float	-	Neutrino flux parameter. Set by the nflux card in the LINK file (See Chapter XXX).	
+69	chi2	float	-	Neutrino flux parameter. Set by the nflux card in the LINK file (See Chapter XXX).	
+70	nye	integer	-	Index of the LINK-specified Ye now being utilized (see Chapter XXX and subroutine SOOT).	
+71	nyem	integer	-	Total number of ye-card-specified \(Y_mathrm{e}\) values in the LINK file (see Chapter XXX).	
+72	idmptime	integer	-	Integer index of the next dump time (dump cycle number in subroutine DUMPQ).	
+73	nylib	integer	-	Number of distinct mass coordinates used so far in describing zoning (ylib entries).	
+74	nylib0	integer	-	Number of ylib entries (see nylib (q 73)) at the end of the last qq dump cycle.	
+75	ndatq	integer	-	Current number of zonal edit variables to be dumped(see subroutines DUMPQ &amp; DUMP).	
+76	locqnext	integer	-	Location of the next open track in the current &#8216;qq&#8217; dump file (see subroutine DUMPQ).	
+77	ndatl	integer	-	Current number of specified &#8216;look&#8217; variables (see subroutine READQ and ADDLOOK).	
+78	eninr	float	erg	Initial rotational energy.	
+79	enr	float	erg	Current rotational energy.	
+80	anglint	float	erg*s	Initial angular momentum.	
+81	anglt	float	erg*s	Current angular momentum.	
+82	xmlossr	float	g/s	Current mass loss rate.	
+83	zfak	float	-	Computed metallicity multiplier on mass loss rate.	
+84	enn	float	erg	Total neutrino energy lost from the star.	
+85	enpist	float	erg	Total energy input by the piston.	
+86	enpistd	float	erg/s	Energy input rate by the piston.	
+87	capeff	float	cm**2/g	Opacity at effective radius.	
+88	xmlost	float	g	Mass lost in the &#8220;wind&#8221;.	
+89	radconv	float	cm	Radius outside of which no convection is allowed.	
+90	ninvl	integer	-	Number of BURN matrix inversions in last cycle.	
+91	ngbkup	integer	-	Number of negative abundance backups in subroutine SDOT for APPROX network.	
+92	mncbkup	integer	-	Number mass non-conservation backups in subroutine SDOT for APPROX network.	
+93	nacbkup	integer	-	Number of excess abundance change backups in subroutine SDOT for APPROX network.	
+94	isebkup	integer	-	Number if ISE non-convergence backups in subroutine SDOT.	
+95	enhd	float	-	Rate of change of thermal (&#8220;heat&#8221;) energy content.	
+96	pboundac	float	-	Boundary pressure due to accretion.	
+97	velnegm	float	-	This quantity is for fallback test only.	
+98	fbrate	float	-	Fallback accretion rate.	
+99	fallback	float	-	Total fallback mass.	
+100	ncycr	integer	-	Cycle of problem generation or last restart.	
+101	h1init	float	-	Initial central h1 mass fraction.	
+102	enrd	float	erg/s	Rate of change of rotational energy during last step.	
+103	ilastpl	integer	-	"Time-of-day" seconds of last plot.	
+104	itimeg	integer	-	Time/date when problem was generated.	
+105	itimed	integer	-	Time/date when dump was generated.	
+106	entloss	float	-	Total energy removed from problems by cutsurf.	
+107	eniloss	float	-	Internal energy removed from problems by cutsurf.	
+108	enkloss	float	-	Kinetic energy removed from problems by cutsurf.	
+109	enploss	float	-	Potential energy removed from problems by cutsurf.	
+110	enrloss	float	-	Rotational energy removed from problems by cutsurf.	
+111	angloss	float	-	Total angular momentum removed from problems by cutsurf.	
+112	anglwnd	float	-	Total angular momentum lost due to wind.	
+113	angit	float	-	Total momentum of inertia of the star.	
+114	wimpcrsi	float	1/s	WIMP spin-emph{indepenedent} capture rate.	
+115	wimpcrsd	float	1/s	WIMP spin-emph{depenedent} capture rate.	
+116	wimparad	float	cm	WIMP annihilation radius scale.	
+117	wimpateq	float	s	WIMP capture &amp; annihilation equilibrium time scale.	
+118	wimparat	float	s	WIMP annihilation rate (two WIMPs annihilate in one annihilation &#8220;event&#8221;).	
+119	wimpalum	float	erg/s	Total WIMP annihilation luminosity as computed by WIMP subroutine in.	
+120	eprodw	float	erg/s	WIMP energy deposition rate in star.	
+121	eprow	float	erg	Total energy deposited in star by WIMP annihilation.	
+122	eprodwx	float	erg/s	WIMP annihilation luminosity emph{outside} star.	
+123	eprowx	float	erg	Total energy produced by wimps OUTSIDE star by WIMP annihilation.	
+124	xmacc	float	g	Total amount of mass accreted in.	
+125	dmacc	float	g	Mass accreted in last time step in.	
+126	jloss	integer	-	Mass losing zone.	
+127	jacc	integer	-	Accretion zone.	
+128	delmass	float	g	Mass lost in last time step in.	
+129	xmdec	float	g	Total mass removed from bottom.	
+130	decmass	float	g	Total mass removed from bottom and not added to substrate.	
+131	dmdec	float	g	Mass removed in last time step.	
+132	xmacrate	float	g/s	Accretion rate.	
+133	he4init	float	-	Initial He4.	
+134	zinit	float	-	Initial metallicity.	
+135	xladv	float	erg/s	Current advection luminosity.	
+136	dvloss	float	cm**3	Volume change due to mass loss.	
+137	dvacc	float	cm**3	Volume change due to mass accretion.	
+138	dvdev	float	cm**3	Volume change due to mass decretion (from bottom).	
+139	env	float	erg	Total viscous energy dissipated.	
+140	envd	float	erg/s	Viscous energy dissipation rate in last time step.	
+141	envc	float	erg	Total viscous energy dissipation check.	
+142	envcd	float	erg/s	Viscous energy dissipation rate check in last time step.	
+143	enpuls	float	erg	Energy depositied by pulsar.	
+144	enpulsd	float	erg/s	Energy deposition rate by pulsar.	
+145	ennidec	float	erg	Energy depositied by \(^{56}\mathrm{Ni}\) decay.	
+146	ennidecd	float	erg/s	Energy deposition rate by \(^{56}\mathrm{Ni}\) decay.	
+147	enxheatd	float	erg/s	Total rate of energy deposition by extra heating.	
+148	enxheat	float	erg	Total energy deposition by extra heating.
