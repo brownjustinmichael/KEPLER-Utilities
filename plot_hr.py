@@ -8,7 +8,7 @@ from astropy.constants import sigma_sb
 
 import cnv
 
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o0s3.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o0s3.cnv")
 
 # Read in the KEPLER cnv output file into cnv_record
 if (len (sys.argv) < 2):

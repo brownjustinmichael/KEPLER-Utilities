@@ -4,7 +4,7 @@ import dump
 
 import sys
 
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o0s3#presn")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o0s3#presn")
 
 if (len (sys.argv) < 2):
     print ("Usage: plot_abundances dump_file (output_file)")

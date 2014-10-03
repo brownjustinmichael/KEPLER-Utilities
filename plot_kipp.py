@@ -10,7 +10,7 @@ import numpy as np
 
 import sys
 
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o0s3.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o0s3.cnv")
 
 # matplotlib.rc ('text', usetex = True)
 
