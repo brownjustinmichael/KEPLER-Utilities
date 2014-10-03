@@ -1,0 +1,12 @@
+*.pyc
+__pycache__/*
+source/*
+source/*/*
+python/*
+python/*/*
+*#*
+*.cnv
+*.pdf
+*.png
+*.db
+.ipynb*
