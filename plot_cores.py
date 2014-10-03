@@ -17,6 +17,7 @@ def numToSize (num):
 session = database.Session ()
 
 query = session.query (database.DumpFileEntry).filter (database.DumpFileEntry.binm10 > 14.9).filter (database.DumpFileEntry.binm10 < 15.1)
+query = query.filter (database.DumpFileEntry.brumoson > 0.).filter (database.DumpFileEntry.woodscon > 0.)
 query = query.filter (database.DumpFileEntry.osfactor >= 0.1).filter (database.DumpFileEntry.osfactor <= 1.0)
 query = query.filter (database.DumpFileEntry.scpower >= 0.9).filter (database.DumpFileEntry.scpower <= 2.1)
 query = query.filter (database.DumpFileEntry.state == 'presn')
@@ -59,7 +60,7 @@ scs.append (ax.scatter (hecores.to (u.solMass), sicores.to (u.solMass), numToSiz
 
 # Plot 4
 ax = axes [1] [1]
-ax.set_ylabel ("Fe")
+ax.set_ylabel ("Time as BSG (yr)")
 scs.append (ax.scatter (hecores.to (u.solMass), tasbsg.to (u.year), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, norm = clrs.LogNorm (), alpha = 0.75))
 
 ax.set_yscale ('log')
