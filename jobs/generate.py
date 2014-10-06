@@ -15,7 +15,7 @@ class Generator (object):
         
         self.original = original
         
-    def generate (self, new_file, **kwargs):
+    def generate (self, new_file, force = False, **kwargs):
         parameters = kwargs
         # parameters = {'scpower' : scpower, 'osfactor' : osfactor}
         
@@ -31,7 +31,8 @@ class Generator (object):
         
         print ("Generating")
         if os.path.isfile (new_file):
-            raise NameError ("File already exists")
+            if not force:
+                raise NameError ("File already exists")
             
         file = open (new_file, 'w')
         file.write (self.content + '\n')
@@ -42,21 +43,23 @@ class Generator (object):
         file.close ()
         
 class Simulation (object):
-    def __init__ (self, name, generator, run_location = '.', command = './kepler'):
+    def __init__ (self, name, generator, run_location = '.', command = './kepler', force = False):
         if len (name) > 8:
             raise NameError ("KEPLER can only handle 8 character names")
             
         if len (glob.glob (os.path.join (run_location, name + ".cnv"))) > 0 or len (glob.glob (os.path.join (run_location, name + "#*"))) > 0:
-            raise NameError ("Dump files would clash with existing files")
+            if not force:
+                raise NameError ("Dump files would clash with existing files")
         
         self.generator = generator
+        self.force = force
         self.command = command
         self.run_location = run_location
         self.name = name
         print ("DONE")
         
     def run (self, **kwargs):
-        self.generator.generate (os.path.join (self.run_location, self.name + 'g'), **kwargs)
+        self.generator.generate (os.path.join (self.run_location, self.name + 'g'), self.force, **kwargs)
         return subprocess.Popen ([self.command, self.name, self.name + 'g'], cwd = self.run_location)
         
     def rebase (self):

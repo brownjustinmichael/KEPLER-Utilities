@@ -1,12 +1,14 @@
-import sqlalchemy
-from sqlalchemy.ext.declarative import declarative_base, DeferredReflection
 import os
 import glob
-import dump
 import datetime
-import cnv
-import astropy.units as u
 import inspect
+
+import astropy.units as u
+import sqlalchemy
+from sqlalchemy.ext.declarative import declarative_base, DeferredReflection
+
+import records.dump
+import records.cnv
 
 __location__ = os.path.realpath (os.path.join (os.getcwd (), os.path.dirname (__file__)))
 
@@ -21,7 +23,7 @@ class setup_parameters:
     
     def __call__ (self, cls):
         if not cls.loaded:
-            parameter_file = open (os.path.join (__location__, self.file), 'r')
+            parameter_file = open (os.path.join (os.path.dirname(__file__), self.file), 'r')
             parameters = []
             for line in parameter_file:
                 words = line.split ('\t')
@@ -41,7 +43,7 @@ class setup_parameters:
                 setattr (cls, 'parameters', parameters)
         return cls
 
-@setup_parameters ('parameters.dat')
+@setup_parameters (records.dump.pfile)
 class SimulationEntry (Base):
     __tablename__ = 'simulations'
     loaded = False
@@ -69,8 +71,8 @@ class SimulationEntry (Base):
             if getattr (self, param) != getattr (entry, param):
                 setattr (self, param, None)
 
-@setup_parameters ('qparameters.dat')
-@setup_parameters ('parameters.dat')
+@setup_parameters (records.dump.pfile)
+@setup_parameters (records.dump.qfile)
 class DumpFileEntry (Base):
     loaded = False
 
@@ -163,7 +165,7 @@ class DumpFileEntry (Base):
         
     def get_data (self):
         if self.dataobject is None:
-            self.dataobject = dump.DataDump (self.file)
+            self.dataobject = records.dump.DataDump (self.file)
         return self.dataobject
         
     def cache (self, session, cache_name, function):
@@ -190,7 +192,7 @@ class CNVFileEntry (Base):
        return "<CNV File (name='%s', timestep='%s', state=%s)>" % (self.simulation.name)
         
     def get_data (self):
-        return cnv.CNVFile (self.file)
+        return records.cnv.CNVFile (self.file)
         
     def cache (self, session, cache_name, function):
         code = ''.join (inspect.getsourcelines (function) [0])

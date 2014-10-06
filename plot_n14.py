@@ -1,26 +1,23 @@
-import database
-import abundances
-import numpy
+import numpy as np
+import astropy.units as u
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
-import matplotlib
-import astropy.units as u
-import cnv
-import kipp
-import shiftlog
 
-session = database.Session ()
+import database.database
+import plots.shiftlog
+import plots.abundances
 
-query = session.query (database.SimulationEntry).filter (database.SimulationEntry.binm10 > 79.9).filter (database.SimulationEntry.binm10 < 80.1)
+session = database.database.Session ()
+
+query = session.query (database.database.SimulationEntry).filter (database.database.SimulationEntry.binm10 > 79.9).filter (database.database.SimulationEntry.binm10 < 80.1)
+query = query.filter (database.database.SimulationEntry.osfactor >= 0.1)
+query = query.filter (database.database.SimulationEntry.osfactor <= 1.0)
 # query = query.filter (database.DumpFileEntry.state == 'sidep')
 
 sims = [entry for entry in query.all ()]
 
-print (sims)
-
-ordered = [session.query (database.DumpFileEntry).filter_by (simulation = sim).filter (database.DumpFileEntry.ncyc % 3000 == 0).order_by (database.DumpFileEntry.ncyc).all () for sim in sims]
-
-print (ordered)
+ordered = [session.query (database.database.DumpFileEntry).filter_by (simulation = sim).filter (database.database.DumpFileEntry.ncyc % 3000 == 0).order_by (database.database.DumpFileEntry.ncyc).all () for sim in sims]
 
 fig, ax = plt.subplots (1, 1, sharex = True)
 
@@ -32,22 +29,23 @@ liness = []
 colorss = []
 for sim in ordered:
     data = [dumpentry.get_data () for dumpentry in sim]
-    datas.extend (list (data))
+    if len (data) > 0:
+        datas.extend (list (data))
 
-    names = [dump.namep for dump in data]
-    namess.extend (list (names))
-    times = u.Quantity ([dump.parameters ['time'] + dump.parameters ['toffset'] for dump in data])
-    timess.extend (list (times))
+        names = [dump.namep for dump in data]
+        namess.extend (list (names))
+        times = u.Quantity ([dump.parameters ['time'] + dump.parameters ['toffset'] for dump in data])
+        timess.extend (list (times))
 
-    nabund = u.Quantity ([numpy.sum (dump ['n14'] * dump ['xm']) for dump in data])
-    nabunds.extend (list (nabund))
-    lines = numpy.zeros (len (nabund))
-    liness.extend (list (lines))
+        nabund = u.Quantity ([np.sum (dump ['n14'] * dump ['xm']) for dump in data])
+        nabunds.extend (list (nabund))
+        lines = np.zeros (len (nabund))
+        liness.extend (list (lines))
 
-    colors = numpy.array ([dump.parameters ['osfactor'] for dump in data])
-    colorss.extend (list (colors))
+        colors = np.array ([dump.parameters ['osfactor'] for dump in data])
+        colorss.extend (list (colors))
     
-    ax.plot (times.to (u.year), nabund.to (u.solMass), c = 'black')
+        ax.plot (times.to (u.year), nabund.to (u.solMass), c = 'black')
 
 figs = {}
 
@@ -75,8 +73,8 @@ def onpick (event):
         ax = newfig.add_axes ([0.1, 0.1, 0.6, 0.75])
         newfig.suptitle ("Overshoot Factor = %.3f, %s" % (colorss [i], "ON" if record.parameters ['brumoson'] > 0 else "OFF"))
 
-        abun = abundances.AbundancePlot (ax, record)
-        plots = abun.plotAll (ymin = 10.**-4)
+        abun = plots.abundances.AbundancePlot (ax, record)
+        newplots = abun.plotAll (ymin = 10.**-4)
 
         ax.legend (bbox_to_anchor=(1.05, 1.2), loc=2, borderaxespad=1)
 

@@ -1,19 +1,18 @@
+import math
+
+import numpy as np
+import astropy.units as u
 import matplotlib.pyplot as plt
 import matplotlib.mlab
 import matplotlib.collections
 import matplotlib.colors
 import matplotlib.scale
 import matplotlib.transforms
-import numpy as np
-import math
-import numpy.ma as ma
-import cnv
-import shiftlog
-import astropy.units as u
 
+import records.cnv
+import plots.shiftlog
 
 msun = 1.988435e33
-tyear = 3.154e7
 
 converter = matplotlib.colors.ColorConverter ()
 
@@ -26,7 +25,7 @@ def returnValue (value, model):
 def returnZero (value, model):
     return 0
 
-def unHeger (value, model):
+def energyBin (value, model):
     if value > 0:
         return float (10. ** (value + model ['mingain']))
     elif value < 0:
@@ -190,7 +189,7 @@ class KippenhahnPlot(object):
         edgecolor = kwargs.pop ('edgecolor', 'white')
 
         # Generate the energy plot from indices 'inuc' and values 'nuc'
-        return self.plotRectangles ('inuc', 'nuc', False, get_value = (unHeger,), cmap = cmap, linewidth = linewidth, norm = norm, edgecolor = edgecolor, logspace = logspace, points = points)
+        return self.plotRectangles ('inuc', 'nuc', False, get_value = (energyBin,), cmap = cmap, linewidth = linewidth, norm = norm, edgecolor = edgecolor, logspace = logspace, points = points)
         
     def addEnergyColorBar (self, energy):
         vmax = max ([max (model ['nuc']) if len (model ['nuc']) != 0 else 0 for model in self.cnv_file])
@@ -224,8 +223,8 @@ class KippenhahnPlot(object):
         return self.plotRectangles ('iconv', 'yzip', True, set_conditions = conditions, get_value = returns, edgecolor = edgecolor, cmap = cmap, linewidth = linewidth, logspace = logspace, points = points, hatch = hatch, color = color, label = label)
         
 def jTDPlot (cnv_record, logspace = True, points = 400):
-    if not isinstance (cnv_record, cnv.CNVFile):
-        cnv_record = cnv.CNVFile (cnv_record)
+    if not isinstance (cnv_record, records.cnv.CNVFile):
+        cnv_record = records.cnv.CNVFile (cnv_record)
 
     # Generate a matplotlib figure with one subplot
     fig = plt.figure (figsize = (18,10))

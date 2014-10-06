@@ -1,43 +1,43 @@
-import cache
-import database
-import abundances
-import numpy
 import numpy as np
+import astropy.units as u
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
-import matplotlib
-import astropy.units as u
-import kipp
 import sqlalchemy
-import cnv
+
+import records.cnv
+import database.database
+import database.cache
+import plots.kipp
+import plots.abundances
 
 def numToSize (num):
     return 100 * (-num + 3.5)
 
-session = database.Session ()
+session = database.database.Session ()
 
-query = session.query (database.DumpFileEntry).filter (database.DumpFileEntry.binm10 > 14.9).filter (database.DumpFileEntry.binm10 < 15.1)
-query = query.filter (database.DumpFileEntry.brumoson > 0.).filter (database.DumpFileEntry.woodscon > 0.)
-query = query.filter (database.DumpFileEntry.osfactor >= 0.1).filter (database.DumpFileEntry.osfactor <= 1.0)
-query = query.filter (database.DumpFileEntry.scpower >= 0.9).filter (database.DumpFileEntry.scpower <= 2.1)
-query = query.filter (database.DumpFileEntry.state == 'presn')
+query = session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.binm10 > 14.9).filter (database.database.DumpFileEntry.binm10 < 15.1)
+query = query.filter (database.database.DumpFileEntry.brumoson > 0.).filter (database.database.DumpFileEntry.woodscon > 0.)
+query = query.filter (database.database.DumpFileEntry.osfactor >= 0.1).filter (database.database.DumpFileEntry.osfactor <= 1.0)
+query = query.filter (database.database.DumpFileEntry.scpower >= 0.9).filter (database.database.DumpFileEntry.scpower <= 2.1)
+query = query.filter (database.database.DumpFileEntry.state == 'presn')
 
 entries = [entry for entry in query.all ()]
 # data = [entry.get_data () for entry in entries]
 sims = [entry.simulation for entry in entries]
 
-hecores = u.Quantity ([entry.cache (session, 'he_core', cache.calculate_he_core) for entry in entries])
-cocores = u.Quantity ([entry.cache (session, 'co_core', cache.calculate_co_core) for entry in entries])
-necores = u.Quantity ([entry.cache (session, 'ne_core', cache.calculate_ne_core) for entry in entries])
-sicores = u.Quantity ([entry.cache (session, 'si_core', cache.calculate_si_core) for entry in entries])
-fecores = u.Quantity ([entry.cache (session, 'fe_core', cache.calculate_fe_core) for entry in entries])
+hecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in entries])
+cocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in entries])
+necores = u.Quantity ([entry.cache (session, 'ne_core', database.cache.calculate_ne_core) for entry in entries])
+sicores = u.Quantity ([entry.cache (session, 'si_core', database.cache.calculate_si_core) for entry in entries])
+fecores = u.Quantity ([entry.cache (session, 'fe_core', database.cache.calculate_fe_core) for entry in entries])
 
-tasbsg = u.Quantity ([sim.cnvfile.cache (session, 'tasbsg', cache.calculate_tasbsg) for sim in sims])
+tasbsg = u.Quantity ([sim.cnvfile.cache (session, 'tasbsg', database.cache.calculate_tasbsg) for sim in sims])
 
-lines = numpy.zeros (len (entries))
+lines = np.zeros (len (entries))
 
-osfactors = numpy.array ([entry.osfactor if (entry.brumoson > 0.0) else 1 for entry in entries])
-scpowers = numpy.array ([entry.scpower for entry in entries])
+osfactors = np.array ([entry.osfactor if (entry.brumoson > 0.0) else 1 for entry in entries])
+scpowers = np.array ([entry.scpower for entry in entries])
 
 fig, axes = plt.subplots (2, 2, sharex = True, figsize = (18, 10))
 
@@ -65,12 +65,6 @@ scs.append (ax.scatter (hecores.to (u.solMass), tasbsg.to (u.year), numToSize (s
 
 ax.set_yscale ('log')
 
-# for corearray in cores [1:]:
-#     ax = next (axiter)
-#     ax.set_ylabel (next (nameiter) + " Core Mass")
-#     print (corearray)
-#     scs.append (ax.scatter (hecores, corearray.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, norm = clrs.LogNorm (), alpha = 0.75))
-
 axes.flat [2].set_xlabel ("He Core Mass")
 axes.flat [3].set_xlabel ("He Core Mass")
 
@@ -96,9 +90,9 @@ def onclick (event):
     time = event.xdata
     i = figs [event.canvas]
     
-    for entry in session.query (database.DumpFileEntry).filter (database.DumpFileEntry.simulation == sims [i]).order_by (database.DumpFileEntry.toffset, database.DumpFileEntry.time).all ():
+    for entry in session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.simulation == sims [i]).order_by (database.database.DumpFileEntry.toffset, database.database.DumpFileEntry.time).all ():
         if u.Quantity (entry.time + entry.toffset, 's') > u.Quantity (time, 'year'):
-            newfig = abundances.jTDPlot (entry.file)
+            newfig = plots.abundances.jTDPlot (entry.file)
             newfig.canvas.mpl_connect('close_event', onabunclose)
             cnv_lines [newfig.canvas] = event.inaxes.plot (u.Quantity ([entry.time + entry.toffset, entry.time + entry.toffset], 's').to (u.year), event.inaxes.get_ylim (), color = 'black', lw = 5, alpha = 0.5)
             event.canvas.draw ()
@@ -116,7 +110,7 @@ def onpick (event):
         # plt.draw ()
         event.canvas.draw ()
         
-        newfig = kipp.jTDPlot (sims [i].cnvfile.file)
+        newfig = plots.kipp.jTDPlot (sims [i].cnvfile.file)
         # newfig = abundances.jTDPlot (entries [i].get_data ())
 
         figs [newfig.canvas] = i

@@ -10,6 +10,9 @@ import astropy.units as u
 
 __location__ = os.path.realpath (os.path.join (os.getcwd (), os.path.dirname (__file__)))
 
+pfile = os.path.realpath (os.path.join (__location__, "parameters.dat"))
+qfile = os.path.realpath (os.path.join (__location__, "qparameters.dat"))
+
 class Isotope(object):
     """
     A python representation of an isotope

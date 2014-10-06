@@ -1,4 +1,4 @@
-import dump
+import records.dump
 import matplotlib.pyplot as plt
 import astropy.units as u
 import numpy
@@ -14,7 +14,7 @@ class AbundancePlot (object):
         self.linecycler = cycle (self.lines)
         
     def plotAbundance (self, isotope, **kwargs):
-        if not isinstance (isotope, dump.Isotope):
+        if not isinstance (isotope, records.dump.Isotope):
             isotope = self.record.getIsotope (isotope)
         return self.axis.plot (self.record ['mass coordinate'].to (u.solMass), self.record [str (isotope)], next (self.linecycler), label = isotope.getLabel (), **kwargs) [0]
     
@@ -50,8 +50,8 @@ class AbundancePlot (object):
         return plots
 
 def jTDPlot (record, ymin = 10.**-2.5, **kwargs):
-    if not isinstance (record, dump.DataDump):
-        record = dump.DataDump (record, False)
+    if not isinstance (record, records.dump.DataDump):
+        record = records.dump.DataDump (record, False)
     
     fig = plt.figure ()
     ax = fig.add_axes ([0.1, 0.1, 0.6, 0.75])

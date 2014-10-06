@@ -34,4 +34,4 @@ sims = []
 
 for os, sc in sets:
     name = "s15o" + ("%.1f" % os).lstrip ("0").rstrip ("0") + "%d" % math.log (sc, 2)
-    kepler_jobs.run.delay (name, generator, run_location, command, scpower = sc, osfactor = os)
+    kepler_jobs.run.delay (name, generator, run_location, command, force = True, scpower = sc, osfactor = os)
