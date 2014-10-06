@@ -73,24 +73,16 @@ class SimulationEntry (Base):
 @setup_parameters ('parameters.dat')
 class DumpFileEntry (Base):
     loaded = False
-    try:
-        __table__ = sqlalchemy.Table('dumpfiles', Base.metadata,
-                        autoload=True, autoload_with=engine)
-        loaded = True
-    except sqlalchemy.exc.NoSuchTableError:
-        __tablename__ = 'dumpfiles'
-        file = sqlalchemy.Column (sqlalchemy.String, primary_key=True)
 
-        runid = sqlalchemy.Column (sqlalchemy.LargeBinary, sqlalchemy.ForeignKey ('simulations.runid'))
-        date = sqlalchemy.Column (sqlalchemy.DateTime)
-        timestep = sqlalchemy.Column (sqlalchemy.Integer)
-        state = sqlalchemy.Column (sqlalchemy.String)
+    __tablename__ = 'dumpfiles'
+    file = sqlalchemy.Column (sqlalchemy.String, primary_key=True)
+
+    runid = sqlalchemy.Column (sqlalchemy.LargeBinary, sqlalchemy.ForeignKey ('simulations.runid'))
+    date = sqlalchemy.Column (sqlalchemy.DateTime)
+    timestep = sqlalchemy.Column (sqlalchemy.Integer)
+    state = sqlalchemy.Column (sqlalchemy.String)
     
     simulation = sqlalchemy.orm.relationship ("SimulationEntry", backref = sqlalchemy.orm.backref ('dumpfiles'))
-
-    # def __init__ (self, data):
-    #     self.data = data
-    #     self.dataobject = None
 
     @sqlalchemy.orm.reconstructor
     def init_on_load (self):
@@ -101,7 +93,8 @@ class DumpFileEntry (Base):
                             self.simulation.name, self.timestep, self.state)
        
     @classmethod
-    def scan_for_updates (cls, directory):
+    def scan_for_updates (cls, directory, glob_string = '*'):
+        glob_string += '#*'
         session = Session ()
         for entry in session.query (DumpFileEntry).all ():
             if not os.path.isfile (entry.file):
@@ -113,13 +106,13 @@ class DumpFileEntry (Base):
                 print ("Simulation " + simentry.name + " is empty: removing from database")
                 session.delete (simentry)
                 session.commit ()
-        for file in glob.glob (os.path.join (directory, '*#*')):
+        for file in glob.glob (os.path.join (directory, glob_string)):
             cls.update_database (session, file)
         for root, dirs, files in os.walk (directory):
             for direct in dirs:
                 direct = os.path.join (root, direct)
-                print ("Searching in " + direct + " for " + os.path.join (direct, '*#*'))
-                for file in glob.glob (os.path.join (direct, '*#*')):
+                print ("Searching in " + direct + " for " + os.path.join (direct, glob_string))
+                for file in glob.glob (os.path.join (direct, glob_string)):
                     cls.update_database (session, file)
         session.commit ()
     
@@ -210,7 +203,8 @@ class CNVFileEntry (Base):
         return result
         
     @classmethod
-    def scan_for_updates (cls, directory):
+    def scan_for_updates (cls, directory, glob_string = "*"):
+        glob_string += ".cnv"
         session = Session ()
         for entry in session.query (CNVFileEntry).all ():
             if not os.path.isfile (entry.file):
@@ -222,13 +216,13 @@ class CNVFileEntry (Base):
                 print ("Simulation " + simentry.name + " is empty: removing from database")
                 session.delete (simentry)
                 session.commit ()
-        for file in glob.glob (os.path.join (directory, '*.cnv')):
+        for file in glob.glob (os.path.join (directory, glob_string)):
             cls.update_database (session, file)
         for root, dirs, files in os.walk (directory):
             for direct in dirs:
                 direct = os.path.join (root, direct)
-                print ("Searching in " + direct + " for " + os.path.join (direct, '*.cnv'))
-                for file in glob.glob (os.path.join (direct, '*.cnv')):
+                print ("Searching in " + direct + " for " + os.path.join (direct, glob_string))
+                for file in glob.glob (os.path.join (direct, glob_string)):
                     cls.update_database (session, file)
         session.commit ()
         

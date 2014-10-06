@@ -1,3 +1,14 @@
+Installation:
+
+Be sure to install the following python packages somewhere where your python distribution can see them:
+	-numpy
+	-astropy
+	-matplotlib
+	-sqlalchemy (If interested in using database.py and update_db.py)
+	-celery (If interested in using generate.py and tasks.py)
+
+I recommend Python 3.4, but let me know if another version isn't working.
+
 Usage:
 
 Database:
