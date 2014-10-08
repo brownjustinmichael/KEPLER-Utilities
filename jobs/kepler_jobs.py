@@ -2,10 +2,11 @@ from celery import Celery
 import math
 import subprocess
 
-import generate
+from . import generate
+from . import celeryconfig
 
 app = Celery('kepler_jobs', backend = 'amqp', broker='amqp://guest@localhost//')
-app.config_from_object('celeryconfig')
+app.config_from_object (celeryconfig)
 
 @app.task
 def run (name, original, run_location = '.', command = './kepler', force = False, **kwargs):

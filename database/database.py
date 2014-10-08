@@ -23,7 +23,7 @@ class setup_parameters:
     
     def __call__ (self, cls):
         if not cls.loaded:
-            parameter_file = open (os.path.join (os.path.dirname(__file__), self.file), 'r')
+            parameter_file = open (self.file, 'r')
             parameters = []
             for line in parameter_file:
                 words = line.split ('\t')
@@ -132,10 +132,10 @@ class DumpFileEntry (Base):
         except sqlalchemy.orm.exc.NoResultFound:
             print ("File not found in database: adding")
             pass
-        d = dump.Dump (file)
+        d = records.dump.Dump (file)
         entry = DumpFileEntry (file = file, date = datetime.datetime.fromtimestamp (os.path.getmtime(file)), timestep = d.ncyc, state = d.getState ())
-        cls.set_parameters (entry, d, 'parameters.dat')
-        cls.set_parameters (entry, d, 'qparameters.dat')
+        cls.set_parameters (entry, d, records.dump.pfile)
+        cls.set_parameters (entry, d, records.dump.qfile)
                         
         try:
             print ("Checking for a corresponding simulation in the database...")
@@ -153,7 +153,7 @@ class DumpFileEntry (Base):
         
     @classmethod
     def set_parameters (cls, entry, dump, file):
-        parameter_file = open (os.path.join (__location__, file), 'r')
+        parameter_file = open (file, 'r')
         for line in parameter_file:
             words = line.split ('\t')
             if words [0] [0] == '#':

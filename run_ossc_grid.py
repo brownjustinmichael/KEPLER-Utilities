@@ -3,9 +3,9 @@ import random
 import math
 import numpy as np
 
-import database
-import generate
-import kepler_jobs
+import database.database as database
+import jobs.generate as generate
+import jobs.kepler_jobs as kepler_jobs
 
 session = database.Session ()
 mass_query = session.query (database.SimulationEntry).filter (database.SimulationEntry.binm10 > 14.9).filter (database.SimulationEntry.binm10 < 15.1).filter (database.SimulationEntry.brumoson > 0.0).filter (database.SimulationEntry.woodscon > 0.0)
@@ -13,7 +13,7 @@ mass_query = session.query (database.SimulationEntry).filter (database.Simulatio
 sc_range = np.arange (-3, 4)
 os_range = np.arange (0.1, 1.1, 0.1)
 
-generator = os.path.join(os.path.dirname(os.path.realpath(__file__)), "generator/s15g")
+generator = os.path.join(os.path.dirname(os.path.realpath(__file__)), "jobs/generator/s15g")
 
 command = "/Users/justinbrown/Codes/kepler/run/kepler"
 run_location = "/Users/justinbrown/Codes/kepler/run/s15"
