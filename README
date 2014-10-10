@@ -3,14 +3,15 @@ Installation:
 Be sure to install the following python packages somewhere where your python distribution can see them:
 	-numpy
 	-astropy
+	-pandas
 	-matplotlib
 	-sqlalchemy (If interested in using database.py and update_db.py)
-	-celery (If interested in using generate.py and tasks.py)
+	-celery (If interested in using generate.py and kepler_jobs.py)
 
 I recommend Python 3.4, but let me know if another version isn't working.
 
-Usage:
-
+USAGE
+-----
 Database:
 
 To make a database of all KEPLER dump files in a directory and all its subdirectories:
@@ -23,4 +24,10 @@ Plotting:
 
 These are example scripts for use and should be modified as desired.
 
-plot_abundances
+To plot the abundance profile of a given dump file:
+python plot_abundances.py name_of_dump_file [name_of_output_file]
+
+To plot a Kippenhahn diagram for a given cnv file:
+python plot_kipp.py name_of_cnv_file [name_of_output_file]
+
+To learn how to query the database and plot a bunch of cached quantities, look at plot_cores.py

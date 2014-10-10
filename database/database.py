@@ -173,6 +173,9 @@ class DumpFileEntry (Base):
         for dumpcache in self.dumpcache:
             if dumpcache.name == cache_name and dumpcache.code == code:
                 return dumpcache.get_value ()
+            elif dumpcache.name == cache_name and dumpcache.code != code:
+                session.delete (dumpcache)
+                session.commit ()
         result = u.Quantity (function (self.get_data ()))
         self.dumpcache.append (DumpCache (name = cache_name, value = result.value, unit = str (result.unit), code = code))
         session.commit ()
@@ -188,17 +191,26 @@ class CNVFileEntry (Base):
     simulation = sqlalchemy.orm.relationship ("SimulationEntry", backref = sqlalchemy.orm.backref ('cnvfile', order_by = file, uselist = False))
     date = sqlalchemy.Column (sqlalchemy.DateTime)
 
+    @sqlalchemy.orm.reconstructor
+    def init_on_load (self):
+        self.dataobject = None
+
     def __repr__(self):
        return "<CNV File (name='%s', timestep='%s', state=%s)>" % (self.simulation.name)
         
     def get_data (self):
-        return records.cnv.CNVFile (self.file)
+        if self.dataobject == None:
+            self.dataobject = records.cnv.CNVFile (self.file)
+        return self.dataobject
         
     def cache (self, session, cache_name, function):
         code = ''.join (inspect.getsourcelines (function) [0])
         for cnvcache in self.cnvcache:
             if cnvcache.name == cache_name and cnvcache.code == code:
                 return cnvcache.get_value ()
+            elif cnvcache.name == cache_name and cnvcache.code != code:
+                session.delete (cnvcache)
+                session.commit ()
         result = u.Quantity (function (self.get_data ()))
         self.cnvcache.append (CNVCache (name = cache_name, value = result.value, unit = str (result.unit), code = code))
         session.commit ()

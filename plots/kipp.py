@@ -139,7 +139,7 @@ class KippenhahnPlot(object):
             model = self.cnv_file [i]
             left = self.times [previous_i]
             right = self.times [i]
-            if (self._distance (left, right, logspace) < total / points):
+            if points is not None and (self._distance (left, right, logspace) < total / points):
                 continue
             previous_i = i
             if (left == right):
