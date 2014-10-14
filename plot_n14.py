@@ -17,7 +17,7 @@ query = query.filter (database.database.SimulationEntry.osfactor <= 1.0)
 
 sims = [entry for entry in query.all ()]
 
-ordered = [session.query (database.database.DumpFileEntry).filter_by (simulation = sim).filter (database.database.DumpFileEntry.ncyc % 3000 == 0).order_by (database.database.DumpFileEntry.ncyc).all () for sim in sims]
+ordered = [session.query (database.database.DumpFileEntry).filter_by (simulation = sim).filter (database.database.DumpFileEntry.ncyc % 50000 == 0).order_by (database.database.DumpFileEntry.ncyc).all () for sim in sims]
 
 fig, ax = plt.subplots (1, 1, sharex = True)
 

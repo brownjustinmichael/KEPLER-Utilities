@@ -18,16 +18,17 @@ def numToSize (num):
 
 session = database.database.Session ()
 
-query = session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.binm10 > 14.9).filter (database.database.DumpFileEntry.binm10 < 15.1)
-query = query.filter (database.database.DumpFileEntry.brumoson > 0.).filter (database.database.DumpFileEntry.woodscon > 0.)
+# query = session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.binm10 > 14.9).filter (database.database.DumpFileEntry.binm10 < 15.1)
+query = session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.binm10 > 79.9).filter (database.database.DumpFileEntry.binm10 < 80.1)
+query = query.filter (database.database.DumpFileEntry.brumoson > 0.)#.filter (database.database.DumpFileEntry.woodscon > 0.)
 query = query.filter (database.database.DumpFileEntry.osfactor >= 0.09).filter (database.database.DumpFileEntry.osfactor <= 1.0)
-query = query.filter (database.database.DumpFileEntry.scpower >= 0.1).filter (database.database.DumpFileEntry.scpower <= 8.1)
+# query = query.filter (database.database.DumpFileEntry.scpower >= 0.1).filter (database.database.DumpFileEntry.scpower <= 8.1)
 query = query.filter (database.database.DumpFileEntry.state == 'presn')
 
 entries = [entry for entry in query.all ()]
 # data = [entry.get_data () for entry in entries]
 sims = [entry.simulation for entry in entries]
-cnvs = [sim.cnvfile for sim in sims]
+cnvs = [sim.cnvfiles [0] for sim in sims]
 
 if len (entries) == 0:
     raise ValueError ("No entries in query")
