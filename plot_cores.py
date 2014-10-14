@@ -18,22 +18,21 @@ def numToSize (num):
 
 session = database.database.Session ()
 
-# query = session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.binm10 > 14.9).filter (database.database.DumpFileEntry.binm10 < 15.1)
-query = session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.binm10 > 79.9).filter (database.database.DumpFileEntry.binm10 < 80.1)
-query = query.filter (database.database.DumpFileEntry.brumoson > 0.)#.filter (database.database.DumpFileEntry.woodscon > 0.)
-query = query.filter (database.database.DumpFileEntry.osfactor >= 0.09).filter (database.database.DumpFileEntry.osfactor <= 1.0)
-# query = query.filter (database.database.DumpFileEntry.scpower >= 0.1).filter (database.database.DumpFileEntry.scpower <= 8.1)
-query = query.filter (database.database.DumpFileEntry.state == 'presn')
+query = database.database.basicQuery (session).filter (database.database.DumpFileEntry.binm10 > 14.9).filter (database.database.DumpFileEntry.binm10 < 15.1)
+query = query.filter (database.database.DumpFileEntry.brumoson > 0.).filter (database.database.DumpFileEntry.woodscon > 0.)
+query = query.filter (database.database.DumpFileEntry.osfactor >= 0.09).filter (database.database.DumpFileEntry.osfactor <= 1.1)
+query = query.filter (database.database.DumpFileEntry.scpower >= 0.1).filter (database.database.DumpFileEntry.scpower <= 8.1)
+query = query.filter (database.database.DumpFileEntry.state == 'presn').filter (database.database.SimulationEntry.cnvfiles.any ())
 
-entries = [entry for entry in query.all ()]
+entries = [entry for sim, entry in query.all ()]
 # data = [entry.get_data () for entry in entries]
-sims = [entry.simulation for entry in entries]
+sims = [sim for sim, entry in query.all ()]
 cnvs = [sim.cnvfiles [0] for sim in sims]
 
 if len (entries) == 0:
     raise ValueError ("No entries in query")
 
-hecores = [entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in entries]
+hecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in entries])
 earlyhecores = u.Quantity ([sim.get_state_dump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in sims])
 lum = u.Quantity ([sim.get_state_dump ("heign").xlum * u.erg / u.s for sim in sims])
 mass = u.Quantity ([sim.get_state_dump ("heign").totm * u.g for sim in sims])
@@ -44,7 +43,7 @@ necores = u.Quantity ([entry.cache (session, 'ne_core', database.cache.calculate
 sicores = u.Quantity ([entry.cache (session, 'si_core', database.cache.calculate_si_core) for entry in entries])
 fecores = u.Quantity ([entry.cache (session, 'fe_core', database.cache.calculate_fe_core) for entry in entries])
 
-tasbsg = u.Quantity ([cnv.cache (session, 'tasbsg', database.cache.calculate_tasbsg) for cnv in cnvs])
+tasbsg = u.Quantity ([cnv.cache (session, 'tasbsg', database.cache.calculate_tasbsg, cache_data = False) for cnv in cnvs])
 
 lines = np.zeros (len (entries))
 

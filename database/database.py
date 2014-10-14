@@ -36,7 +36,6 @@ class setup_parameters (object):
         """
         Save the parameter file name
         """
-        super (setup_parameters, self).__init__ ()
         self.file = file
     
     def __call__ (self, cls):
@@ -70,10 +69,74 @@ class setup_parameters (object):
             
         return cls
 
-class caching:
+class Cache (object):
+    """
+    A mixin object for a cache entry object to inherit, providing the relevant columns and accessors
+    """
+    id = sqlalchemy.Column (sqlalchemy.Integer, primary_key = True)
+    name = sqlalchemy.Column (sqlalchemy.String)
+    code = sqlalchemy.Column (sqlalchemy.String)
+    
+    value = sqlalchemy.Column (sqlalchemy.Float)
+    unit = sqlalchemy.Column (sqlalchemy.String)
+
+    def get_value (self):
+        """
+        Return the current cache value (with appropriate AstroPy units)
+        """
+        return self.value * u.Unit (self.unit)
+        
+    @classmethod
+    def CacheFactory (cls, name, entrycls, tablename, **kwargs):
+        """
+        Create a cache object inside of cls that is itself a SQLAlchemy entry object
+        """
+        newclass = type (name, (cls, Base), {"__tablename__": tablename, \
+            "file": sqlalchemy.Column (sqlalchemy.String, sqlalchemy.ForeignKey (entrycls.file)), \
+            "entry": sqlalchemy.orm.relationship (entrycls, **kwargs), \
+            "__table_args__": (sqlalchemy.UniqueConstraint('name', 'file', name='uix_1'),)})
+        setattr (entrycls, "Cache", newclass)
+        return newclass
+    
+    @classmethod
+    def caching (cls, entrycls):
+        """
+        This decorator function is designed to add a caching ability to any subclass of Base
+        """
+        # Create the cache entry and table using CacheFactory
+        entrycls.Cache = cls.CacheFactory (entrycls.__name__ + "Cache", entrycls, entrycls.__name__.lower ().replace ("entry", "") + "cache", backref = sqlalchemy.orm.backref ('cached'))
+    
+        # Define the caching method for cls, which will check whether the value has been cached previously
+        def cache (self, session, cache_name, function, cache_data = True):
+            # Create a string version of the function for code comparison
+            code = ''.join (inspect.getsourcelines (function) [0])
+    
+            # Check if the cached function already exists in the current cache
+            for cache in self.cached:
+                if cache.name == cache_name and cache.code == code:
+                    # If it exists, return the value
+                    return cache.get_value ()
+                elif cache.name == cache_name and cache.code != code:
+                    # If the code has changed, delete the cache
+                    session.delete (cache)
+                    session.commit ()
+            
+            # Evaluate the cached function
+            result = u.Quantity (function (self.get_data (cache_data)))
+            self.cached.append (self.Cache (name = cache_name, value = result.value, unit = str (result.unit), code = code))
+    
+            # Commit the result and return it
+            session.commit ()
+            return result
+        
+        setattr (entrycls, "cache", cache)
+        return entrycls
 
 @setup_parameters (records.dump.pfile)
 class SimulationEntry (Base):
+    """
+    A database entry for simulations, which will each hold a number of file entry objects
+    """
     __tablename__ = 'simulations'
     
     id = sqlalchemy.Column (sqlalchemy.Integer, primary_key=True)
@@ -86,28 +149,45 @@ class SimulationEntry (Base):
         return "<SimulationEntry(name='%s', id=%s)>" % (self.name, str (self.id))
         
     def get_state_dump (self, state):
+        """
+        Get a dump file in the simulation with the given string state, e.g. "presn", "hdep", "2000", etc.
+        """
         for dump in self.dumpfiles:
             if dump.state == state:
                 return dump
         raise IndexError ("State %s not found in simulation" % state)
         
     def copy_parameters (self, entry):
+        """
+        Copy the parameters from entry into the simulation
+        """
         for param in self.parameters:
             setattr (self, param, getattr (entry, param))
             
     def check_parameters (self, entry):
+        """
+        Compare the simulation parameters to those from entry. If any are different, turn them to None in the simulation entry.
+        
+        The reasoning behind this is that the simulation has a set of parameters that define it, but because of the nature of KEPLER, these parameters can change during the course of a run. Any parameters that change would not be good parameters to query for the simulation. (Sadly, any parameters can change at any point, so we can't just remove these from the parameter list.)
+        """
         for param in self.parameters:
             if getattr (self, param) != getattr (entry, param):
                 setattr (self, param, None)
 
 @sqlalchemy.event.listens_for(Session, 'after_flush')
 def delete_sim_orphans(session, ctx):
+    """
+    A simulation can only exist if it contains at least one file. After flushing the session, delete any orphaned simulations
+    """
     session.query(SimulationEntry).\
         filter(~SimulationEntry.dumpfiles.any()).\
         filter(~SimulationEntry.cnvfiles.any()).\
         delete(synchronize_session=False)
 
 class FileEntry (object):
+    """
+    This base mixin is a superclass for a file entry object, and it contains all the pieces that will be needed for any generic file entry
+    """
     file = sqlalchemy.Column (sqlalchemy.String, primary_key=True)
     date = sqlalchemy.Column (sqlalchemy.DateTime)
     
@@ -135,28 +215,6 @@ class FileEntry (object):
     @abc.abstractmethod
     def genFromFile (cls, file):
         pass
-        
-    def cache (self, session, cache_name, function):
-        # Create a string version of the function for code comparison
-        code = ''.join (inspect.getsourcelines (function) [0])
-        
-        # Check if the cached function already exists in the current cache
-        for cache in self.cached:
-            if cache.name == cache_name and cache.code == code:
-                # If it exists, return the value
-                return cache.get_value ()
-            elif cache.name == cache_name and cache.code != code:
-                # If the code has changed, delete the cache
-                session.delete (cache)
-                session.commit ()
-                
-        # Evaluate the cached function
-        result = u.Quantity (function (self.get_data ()))
-        self.cached.append (self.Cache (name = cache_name, value = result.value, unit = str (result.unit), code = code))
-        
-        # Commit the result and return it
-        session.commit ()
-        return result
         
     @classmethod
     def update_database (cls, session, file_name):
@@ -234,6 +292,7 @@ class FileEntry (object):
 
 @setup_parameters (records.dump.pfile)
 @setup_parameters (records.dump.qfile)
+@Cache.caching
 class DumpFileEntry (FileEntry, Base):
     __tablename__ = 'dumpfiles'
     
@@ -241,8 +300,7 @@ class DumpFileEntry (FileEntry, Base):
     state = sqlalchemy.Column (sqlalchemy.String)
         
     def __repr__(self):
-       return "<Dump (name='%s', timestep='%s', state=%s)>" % (
-                            self.simulation.name, self.timestep, self.state)
+       return "<Dump (name='%s', timestep='%s', state=%s)>" % (self.simulation.name, self.timestep, self.state)
     
     def __init__ (self, **kwargs):
         super (DumpFileEntry, self).__init__ (**kwargs)
@@ -273,11 +331,15 @@ class DumpFileEntry (FileEntry, Base):
             except KeyError as e:
                 pass
         
-    def get_data (self):
+    def get_data (self, cache = True):
+        dataobject = records.dump.DataDump (self.file)
+        if not cache:
+            return dataobject
         if self.dataobject is None:
-            self.dataobject = records.dump.DataDump (self.file)
+            self.dataobject = dataobject
         return self.dataobject
-        
+
+@Cache.caching
 class CNVFileEntry (FileEntry, Base):
     __tablename__ = 'cnvfiles'
     
@@ -295,37 +357,16 @@ class CNVFileEntry (FileEntry, Base):
         entry = CNVFileEntry (file = file, name = name, date = datetime.datetime.fromtimestamp (os.path.getmtime(file)))
         return entry, None, name
         
-    def get_data (self):
+    def get_data (self, cache = True):
+        dataobject = records.cnv.CNVFile (self.file)
+        if not cache:
+            return dataobject
         if self.dataobject == None:
-            self.dataobject = records.cnv.CNVFile (self.file)
+            self.dataobject = dataobject
         return self.dataobject
         
     def addToSimulation (self, simulationEntry):
         self.simulation = simulationEntry
-
-class Cache (object):
-    id = sqlalchemy.Column (sqlalchemy.Integer, primary_key = True)
-    name = sqlalchemy.Column (sqlalchemy.String)
-    code = sqlalchemy.Column (sqlalchemy.String)
-    
-    value = sqlalchemy.Column (sqlalchemy.Float)
-    unit = sqlalchemy.Column (sqlalchemy.String)
-
-    def get_value (self):
-        return self.value * u.Unit (self.unit)
-
-def CacheFactory (name, cls, tablename, BaseClass = Cache, **kwargs):
-    newclass = type (name, (BaseClass, Base), {"__tablename__": tablename, \
-        "file": sqlalchemy.Column (sqlalchemy.String, sqlalchemy.ForeignKey (cls.file)), \
-        "entry": sqlalchemy.orm.relationship (cls, **kwargs), \
-        "__table_args__": (sqlalchemy.UniqueConstraint('name', 'file', name='uix_1'),)})
-    setattr (cls, "Cache", newclass)
-    return newclass
-    
-DumpCache = CacheFactory ("DumpCache", DumpFileEntry, "dumpcache", backref = sqlalchemy.orm.backref ('cached'))
-CNVCache = CacheFactory ("CNVCache", CNVFileEntry, "cnvcache", backref = sqlalchemy.orm.backref ('cached'))
-
-# Base.prepare (engine)
 
 def basicQuery (session):
     return session.query (SimulationEntry, DumpFileEntry).join (DumpFileEntry)
