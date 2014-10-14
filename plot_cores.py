@@ -29,7 +29,10 @@ entries = [entry for entry in query.all ()]
 sims = [entry.simulation for entry in entries]
 cnvs = [sim.cnvfile for sim in sims]
 
-hecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in entries])
+if len (entries) == 0:
+    raise ValueError ("No entries in query")
+
+hecores = [entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in entries]
 earlyhecores = u.Quantity ([sim.get_state_dump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in sims])
 lum = u.Quantity ([sim.get_state_dump ("heign").xlum * u.erg / u.s for sim in sims])
 mass = u.Quantity ([sim.get_state_dump ("heign").totm * u.g for sim in sims])

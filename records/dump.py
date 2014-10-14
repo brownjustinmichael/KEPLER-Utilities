@@ -236,9 +236,12 @@ class Dump (object):
         i = 0
         for line in file:
             words = line.split ('\t')
-            
-            # Check that this isn't a comment line
             if len (words) == 0 or words [0] == comment:
+                # Check that this isn't a comment line
+                continue
+            elif len (words) > 6 and words [6] != '\n' and words [6] != '' and int (words [6].rstrip ('\n')) > self.version:
+                # Check that this parameter wasn't added after the current version
+                print ("Skipping parameter " + words [1] + " because this version of KEPLER predates it")
                 continue
             else:
                 i += 1

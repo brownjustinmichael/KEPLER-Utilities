@@ -19,13 +19,13 @@
 19	xmlen	float	1.	-	Ratio of the convective mixing length to the pressure scale height.	
 20	fudgc	float	0.01	-	Fudge factor for convection (about 0.01).	
 21	difim	float	1.	-	Multiplier for the rate of convective mixing.	
-22	fcrbu	float	0.01	-	Reduce timestep by dtcut (p 53) and redo step if convergence error in radius is still greater than fcrbu (p 22) after maxit (p 5)	iterations.	
-23	fctbu	float	0.01	-	Reduce timestep by dtcut (p 53) and redo step if convergence error in temperature is still greater than fctbu (p 23) after maxit (p 5)	iterations.	
+22	fcrbu	float	0.01	-	Reduce timestep by dtcut (p 53) and redo step if convergence error in radius is still greater than fcrbu (p 22) after maxit (p 5) iterations.	
+23	fctbu	float	0.01	-	Reduce timestep by dtcut (p 53) and redo step if convergence error in temperature is still greater than fctbu (p 23) after maxit (p 5) iterations.	
 24	drmult	float	0.1	-	Semi-convective mixing will be slower than thermal transport by at least drmult (p 24) (about 0.1) in zones with mean atomic weight, \(\bar{A}\), is \(\ge\) abarsemi (p 324).	
 25	dtmax	float	1.e+99	s	Maximum timestep allowed.	
 26	fcrext	float	10.	-	Factor used to reduce noise in radius extrapolation.	
 27	fctext	float	10.	-	Factor used to reduce noise in temperature extrapolation.	
-28	ipup	integer	1	-	Abundance update parameter.  Update abundances only if ipup (p 28)	:nath:&#8217;ne&#8217; 0.	
+28	ipup	integer	1	-	Abundance update parameter.  Update abundances only if ipup (p 28):nath:&#8217;ne&#8217; 0.	
 29	xkimt	float	1.	-	Multiplier on IBEN1 opacity.	
 30	xk2mt	float	1.	-	Multiplier on IBEN2 opacity.	
 31	xk3mt	float	1.	-	Multiplier on Christy opacity.	
@@ -38,7 +38,7 @@
 38	timex0	float	-1.e+99	s	Time at which any ni56 present in low temperature regions (as determined by dypmin (p 89) and tnucmin (p 65)) of the star is assumed to have been produced and begun to decay, first to \(^{56}\mathrm{Co}\) and then to \(^{56}\mathrm{Fe}\).	
 39	dyemult	float	200.	-	If iytsflag (p 67) \(\ge\) 1, increase the timestep sensitivity to changes in ye by a factor of dyemult (p 39).	
 40	dyqmult	float	2.5	-	If iytsflag (p 67) \(\ge\) 1, increase the timestep sensitivity to changes in yq by a factor of dyqmult (p 40).	
-41	yemin	float	0.02	-	No further changes in ye are allowed for ye \(&lt;\)	yemin (p 41) :unit: mol/g.	
+41	yemin	float	0.02	-	No further changes in ye are allowed for ye \(&lt;\) yemin (p 41) :unit: mol/g.	
 42	iwinsize	integer	10240750	-	Size of graphics window to be created in the form xxxxyyyy.	
 43	hstatm	float	1.	-	Multiplier on the inertial terms in the momentum balance equation.	
 44	lenqmax	integer	3000000	byte	Maximum length of a post-processor dump file.	
@@ -56,21 +56,21 @@
 56	xipot	float	13.6053	eV	Ionization potential.	
 57	dzero	float	0.1	g/cm**3	Characteristic density for pressure ionization (.	
 58	npflag	integer	1	-	Pairs are included in EOS calculation only if npflag (p 58) \(&gt;\) 0.	
-59	fracneut	float	0.05	-	If the semi convective test parameter, \(W\), is \(&lt;\)	0. but greater than - fracneut (p 59) * abs(log(T1/T0)), then the zonal interface is flagged convectively neutral (&#8220;NEUT&#8221; or &#8221;,&#8221;).	
+59	fracneut	float	0.05	-	If the semi convective test parameter, \(W\), is \(&lt;\) 0. but greater than - fracneut (p 59) * abs(log(T1/T0)), then the zonal interface is flagged convectively neutral (&#8220;NEUT&#8221; or &#8221;,&#8221;).	
 60	radius0	float	0.	cm	Radius of inner boundary.	
 61	summ0	float	0.	g	Mass inside inner boundary.	
 62	xlum0	float	0.	erg/s	Luminosity emerging from inner surface.	
 63	irnet	integer	0	-	Network switch parameter.	
-64	npixedit	integer	50	-	Graphics edits to the monitor are made every npixedit (p 64)	KEPLER cycles (if itvstart (p 127) \(&gt;\) 0).	
+64	npixedit	integer	50	-	Graphics edits to the monitor are made every npixedit (p 64) KEPLER cycles (if itvstart (p 127) \(&gt;\) 0).	
 65	tnucmin	float	0.	K	Don't calculate nuclear burning in APPROX if the temperature is less than tnucmin (p 65).	
 66	nsetparm	integer	170001	-	Initialize new parameters in subroutine restart and re-arrange/add/remove/initialize internal arrays and edit quantities if nsetparm (p 66) \(\le\) current version.	
-67	iytsflag	integer	1	-	Consider only changes in ye, yq, yf, ysi, and y56 in ISE	zones when computing the timestep if iytsflag (p 67) \(\ge\) 1.	
+67	iytsflag	integer	1	-	Consider only changes in ye, yq, yf, ysi, and y56 in ISE zones when computing the timestep if iytsflag (p 67) \(\ge\) 1.	
 68	tbound	float	0.	K	Temperature at outer boundary.	
 69	pbound	float	0.	erg/cm**3	Pressure at outer boundary.	
 70	fclmax	float	1.	-	Maximum allowed relative convergence error in luminosity.	
 71	fclext	float	1.e-5	-	Factor used to reduce noise in luminosity extrapolation.	
 72	dtcl	float	1.e+99	-	Maximum desired fractional change in luminosity per step.	
-73	fclbu	float	1.	-	Reduce timestep by dtcut (p 53) and redo step if convergence error in luminosity is still greater than fclbu (p 73) after maxit (p 5)	iterations.	
+73	fclbu	float	1.	-	Reduce timestep by dtcut (p 53) and redo step if convergence error in luminosity is still greater than fclbu (p 73) after maxit (p 5) iterations.	
 74	tfclbu	float	1.e+99	-	If the maximum fractional change in luminosity during a timestep exceeds tfclbu (p 74) * dtcl (p 72) then redo step.	
 75	dtsmult	float	1.e+99	-	The fractional amount of semi convective mixing that can occur in one timestep is limited to approximately dtsmult (p 75).	
 76	rnratmax	float	0.25	-	Maximum fractional radius change allowed betWeen zones before adzoning.	
@@ -103,10 +103,10 @@
 103	dsnum	float	1.e-6	-	Fractional density and temperature perturbations used to get nuclear energy generation rate derivatives.	
 104	tcorefac	float	1.	-	Increase the rezoner&#8217;s sensitivity to temperature gradients by a factor of tcorefac (p 104) in the region where fracm, the cumulative mass fraction measured from the center of the star, is less than or equal fracrz1 (p 138).	
 105	tqsemin	float	2.e+9	K	Floor on the temperature used in the ISE calculation.	
-106	jqse	integer	0	-	Change all APPROX network zones with j \(&lt;\)	jqse (p 106) to the ISE network.	
-107	artv1	float	1.	-	Multiply q1fac (p 13) by artv1 (p 107) in zone j if jartv1 (p 110)	\(\le\) j \(\le\)  artv2 (p 108).	
-108	artv2	float	1.	-	Multiply q1fac (p 13) by artv2 (p 108) in zone j	if jartv2 (p 111) \(\le\) j \(&lt;\) jm - jartv3 (p 112).	
-109	artv3	float	1.	-	Multiply q1fac (p 13) by artv3 (p 109) in zone j	if j \(\ge\) max(jartv1 (p 110), jartv2 (p 111), jm - jartv3 (p 112)).	
+106	jqse	integer	0	-	Change all APPROX network zones with j \(&lt;\) jqse (p 106) to the ISE network.	
+107	artv1	float	1.	-	Multiply q1fac (p 13) by artv1 (p 107) in zone j if jartv1 (p 110) \(\le\) j \(\le\)  artv2 (p 108).	
+108	artv2	float	1.	-	Multiply q1fac (p 13) by artv2 (p 108) in zone j if jartv2 (p 111) \(\le\) j \(&lt;\) jm - jartv3 (p 112).	
+109	artv3	float	1.	-	Multiply q1fac (p 13) by artv3 (p 109) in zone j if j \(\ge\) max(jartv1 (p 110), jartv2 (p 111), jm - jartv3 (p 112)).	
 110	jartv1	float	1000.	-	See artv1 (p 107) - artv3 (p 109).	
 111	jartv2	integer	1000	-	See artv1 (p 107) - artv3 (p 109).	
 112	jartv3	integer	1000	-	See artv1 (p 107) - artv3 (p 109).	
@@ -117,7 +117,7 @@
 117	igridm	integer	498	-	Obsolete.	
 118	igridv	integer	496	-	Obsolete.	
 119	jp0	integer	1	-	Innermost zone to plot.	
-120	jp1	integer	0	-	Outermost zone to plot is jm	(outermost zone) - jp1 (p 120).	
+120	jp1	integer	0	-	Outermost zone to plot is jm (outermost zone) - jp1 (p 120).	
 121	rpmino	float	1.e+7	cm	Minimum radius plotted when jp0 (p 119) \(&lt;\) 0.	
 122	rpmaxo	float	1.e+14	cm	Maximum radius plotted when jp1 (p 120) \(&lt;\) 0.	
 123	ymintd	float	1.	g/cm**3	Lower bound of thermodynamics graph ordinate shall be no greater than ymintd (p 123).	
@@ -145,12 +145,12 @@
 145	fracmlim	float	0.01	-	See abarrat0 (p 143).	
 146	frcsound	float	0.1	-	Don't do convection if the absolute value of the zone velocity exceeds frcsound (p 146) times the local sound speed.	
 147	convlim	float	1.	-	Limit the convective velocity to a fraction convlim (p 147) of the local sound speed.	
-148	woversht	float	0.01	-	The semiconvective test parameter, \(W\), is taken to be \(W\) \(=\) woversht (p 148) * abs ( log	(T1/T0)) for the special overshoot semiconvective zones where \(W\) would otherwise be \(&lt;\) 0 and when \(\bar{A}\) \(\ge\) abarsemi (p 324).	
-149	xmimult	float	1.	-	The mass used in calculating ion degeneracy is xmimult (p 149)	times the mass of a neutron.	
+148	woversht	float	0.01	-	The semiconvective test parameter, \(W\), is taken to be \(W\) \(=\) woversht (p 148) * abs ( log (T1/T0)) for the special overshoot semiconvective zones where \(W\) would otherwise be \(&lt;\) 0 and when \(\bar{A}\) \(\ge\) abarsemi (p 324).	
+149	xmimult	float	1.	-	The mass used in calculating ion degeneracy is xmimult (p 149) times the mass of a neutron.	
 150	fmax0	float	1.	-	Adzone mass fraction parameter.	
 151	fmax1	float	1.	-	See fmax0 (p 150).	
 152	fmax2	float	1.	-	See fmax0 (p 150).	
-153	ddsfrac	float	0.01	-	Maximum fractional change in density since the last iteration for which \(\bar{A}\) changes and energy generation rates can be extrapolated from their previous values (APPROX	only).	
+153	ddsfrac	float	0.01	-	Maximum fractional change in density since the last iteration for which \(\bar{A}\) changes and energy generation rates can be extrapolated from their previous values (APPROX only).	
 154	dtsfrac	float	0.001	-	Maximum fractional change in temperature since the last iteration for which ABAR changes and energy generation rates can be extrapolated from their previous values (APPROX only).	
 155	iudflag	integer	0	-	Extrapolate energy generation rates and \(\bar{A}\) changes in cases of small temperature and density change only if iudflag (p 155) is also \(\le\) 0.	
 156	nsdump	integer	10	-	Save every NSDUMP restart dumps.	
@@ -168,7 +168,7 @@
 168	njeditq	integer	5	-	Make a ISE edit every njeditq (p 168) zones.	
 169	dtqnum	float	0.0001	-	Relative temperature change used in calculating numerical derivatives in sdotq.	
 170	ddqnum	float	0.0001	-	Relative density change used in calculating numerical derivatives in sdotq.	
-171	iexciteh	integer	1	-	Include excited states in ISE calculations only if iexciteh (p 171)	\(&gt;\) 0.	
+171	iexciteh	integer	1	-	Include excited states in ISE calculations only if iexciteh (p 171) \(&gt;\) 0.	
 172	iterqmh	integer	1000	-	Maximum number of iterations allowed in ISE calculation.	
 173	ypconvh	float	1.e-8	-	Allowed relative convergence error in the proton abundance in the ISE calculation.	
 174	ynconvh	float	1.e-8	-	Allowed relative convergence error in the neutron abundance in the ISE calculation.	
@@ -177,8 +177,8 @@
 177	fyph	float	0.05	-	Maximum allowed relative change in proton abundance during an ISE iteration.	
 178	fynh	float	0.05	-	Maximum allo~ed relative change in neutron abundance during an ISE iteration.	
 179	fysih	float	0.15	-	Maximum allowed relative change in Si28 abundance during an ISE iteration.	
-180	neditq	integer	20	-	Make a detailed edit of the ISE zones every neditq (p 180)	general numerical edits.	
-181	xiter1qe	float	0.5	-	If the relative change of the proton, neutron, or \(^{28}\mathrm{Si}\)	abundance is opposite in sign and more than xiter1qe (p 181) in magnitude with respect to the corresponding change during the previous ISE iteration cycle, then cut the current step size in half if more than iter1qe (p 182) iterations have been done.	
+180	neditq	integer	20	-	Make a detailed edit of the ISE zones every neditq (p 180) general numerical edits.	
+181	xiter1qe	float	0.5	-	If the relative change of the proton, neutron, or \(^{28}\mathrm{Si}\) abundance is opposite in sign and more than xiter1qe (p 181) in magnitude with respect to the corresponding change during the previous ISE iteration cycle, then cut the current step size in half if more than iter1qe (p 182) iterations have been done.	
 182	iter1qe	integer	10	-	See xiter1qe (p 181).	
 183	xthres	float	0.0001	-	Edit only those ISE isotopes with mass fractions exceeding xthres (p 183).	
 184	tqselim	float	1.5e+9	K	A sufficient condition to change a zone from the APPROX to ISE network is if its temperature exceeds tqselim (p 184), its o16 mass fraction is less than o16lim (p 185), its iron peak mass fraction exceeds qn56lim (p 186), and its density exceeds dqselim (p 203).	
@@ -186,25 +186,25 @@
 186	qn56lim	float	0.	-	See tqselim (p 184).	
 187	snuwmult	float	1.	-	Multiplier on neutrino energy losses from weak processes on nuclei and nucleons.	
 188	jnse	integer	0	-	Change all ISE zones with j \(&lt;\) jnse (p 188) to the NSE network.	
-189	siqselim	float	0.001	-	A sufficient condition to change a zone from the ISE to the NSE	network is for the sum of the silicon and sulphur &#8220;group&#8221; elemental mass fractions to be less than or equal to siqselim (p 189).	
+189	siqselim	float	0.001	-	A sufficient condition to change a zone from the ISE to the NSE network is for the sum of the silicon and sulphur &#8220;group&#8221; elemental mass fractions to be less than or equal to siqselim (p 189).	
 190	jlcalc	integer	0	-	Remove the inner jlcalc (p 190) zones from the problem and reset the inner boundary conditions on radius, radius0 (p 60), and mass, summ0 (p 61), but don&#8217;t change the central luminosity, xlum0 (p 62).	
-191	vlimset	float	-1.	-	The ordinate bounds of the velocity graph are \(\pm\)	vlimset (p 191) if vlimset (p 191) \(&gt;\) 0.  Otherwise the ordinate bounds are rescaled automatically.  :unit: cm/s.	
+191	vlimset	float	-1.	-	The ordinate bounds of the velocity graph are \(\pm\) vlimset (p 191) if vlimset (p 191) \(&gt;\) 0.  Otherwise the ordinate bounds are rescaled automatically.  :unit: cm/s.	
 192	jpause	integer	-1	-	Pause the code at the end of the calculation for zone j = jpause (p 192) in REGESS (&#8220;pause 1&#8221;) and in update (&#8220;PAUSE 2&#8221;).  Do not pause if jpause (p 192) &lt; 0. Type a carriage return to continue.	
 193	fracrz0	float	-1.	-	See fracrz1 (p 138) and fmax0 (p 150).	
 194	rzmultm	float	1.	-	See fracrz1 (p 138).	
 195	fmaxm	float	1.	-	See fmax0 (p 150).	
 196	eionmult	float	1.	-	Multiplier on the contribution of ionization potential energy to the equation of state.  See subroutine ES.	
-197	nnewoutf	integer	2000	-	Start a new labelled ASCII output file every nnewoutf (p 197)	cycles.	
-198	neditq1	integer	5	-	Make an ISE edit for the central zone every neditq1 (p 198) * nedit (p 16)	cycles.	
+197	nnewoutf	integer	2000	-	Start a new labelled ASCII output file every nnewoutf (p 197) cycles.	
+198	neditq1	integer	5	-	Make an ISE edit for the central zone every neditq1 (p 198) * nedit (p 16) cycles.	
 199	wilsonmt	float	-1.	-	Multiplier on the Wilson-based nuclear EOS (except for thee thermal ion component) if it is \(\ge\) 0.  Otherwise, the old non-relativistic, partial degeneracy model for the ion EOS is used.	
 200	t11cut	float	1.	1.e+11 K	Upper bound on the temperature used to calculate the energy in nuclear excited states and nuclear partition functions.	
 201	y56gessm	float	0.0001	mol/g	Initial guess made in sdot for the y56 abundance when initializing a new ISE zone.	
-202	isi30brn	integer	1	-	Neutron-rich-silicon-burning flows are included in the ISE	network if isi30brn (p 202) \(\ge\) 1.	
+202	isi30brn	integer	1	-	Neutron-rich-silicon-burning flows are included in the ISE network if isi30brn (p 202) \(\ge\) 1.	
 203	dqselim	float	100000.	g/cm**3	Nominal minimum density for changing a zone from the APPROX to the ISE network.	
 204	abunminx	float	-1.e-5	-	Force a backup after a call to subroutine BURN from subroutine sdot if a calculated elemental mass fraction change would cause the resulting mass fraction to be less than abunminx (p 204) or to change by a fractional amount greater than tfcybu (p 205).	
 205	tfcybu	float	0.5	-	Maximim allowed fractional change in abundance before an abundance backup is made. (See abunminx (p 204)).	
 206	yfloorbx	float	0.001	-	Elemental mass fraction floor for making abundance backups. (See abunminx (p 204)).	
-207	iqerrflg	integer	1	-	Fatal errors in qburn encountered during a normal regess	iteration will cause KEPLER to back-up if iqerrflg (p 207)	\(\ge\) 1, or to terminate if iqerrflg (p 207) \(&lt;\) 1.	
+207	iqerrflg	integer	1	-	Fatal errors in qburn encountered during a normal regess iteration will cause KEPLER to back-up if iqerrflg (p 207) \(\ge\) 1, or to terminate if iqerrflg (p 207) \(&lt;\) 1.	
 208	c12agmlt	float	1.	-	Multiplier on the overall C12(a,g) rate (APPROX only).	
 209	xltaucon	float	0.	-	Limit how fast convective velocity can increase.	
 210	noqsecon	integer	0	-	Don't force zones that are convectively coupled to ISE zones to go to ISE if noqsecon (p 210) \(&gt;\) 0.	
@@ -222,7 +222,7 @@
 222	totm0	float	0.	g	The original total mass of the star.	
 223	fracdez	float	0.5	-	Dezone the mass-losing zone if its mass drops below fracdez (p 223) times the average mass of the zones on either side of it.	
 224	xmratbak	float	0.2	-	Redo the timestep (&#8220;backup&#8221;) if the fractional change of mass in the mass-losing zone exceeds xmratbak (p 224).	
-225	xfracml	float	0.01	-	Subtract any &#8220;surface&#8221; mass loss specified by xmlossm (p 220)	or xmloss0 (p 221) from the zone closest to the surface that still has more than xfracml (p 225) * totm0 (p 222)	grams of material overlying it.	
+225	xfracml	float	0.01	-	Subtract any &#8220;surface&#8221; mass loss specified by xmlossm (p 220) or xmloss0 (p 221) from the zone closest to the surface that still has more than xfracml (p 225) * totm0 (p 222) grams of material overlying it.	
 226	mlcompf	integer	0	-	Obsolete.	
 227	e1mltc12	float	1.	-	Multiplier on the E1 part of the C12(a,g) cross-section.	
 228	e2mltc12	float	1.	-	Multiplier on the E2 part of the C12(a,g) cross-section.	
@@ -240,17 +240,17 @@
 240	netmax	integer	1	-	BURN co-processing is skipped if a zone&#8217;s network number, netnum, is greater than netmax (p 240).	
 241	neditb	integer	5	-	Make a BURN isotopic abundance edit every neditb (p 241) * nedit (p 16) KEPLER cycles.	
 242	edmassl	float	0.0001	-	Obsolete.	
-243	nedita	integer	10	-	Make an elemental abundance edit every nedita (p 243) * nedit (p 16)	cycles.	
+243	nedita	integer	10	-	Make an elemental abundance edit every nedita (p 243) * nedit (p 16) cycles.	
 244	jmeditb	integer	1	-	Edit only zones whose zone number is \(\le\) jmeditb (p 244) during normal BURN isotopic abundance edits.	
 245	neditall	integer	100	-	Make a BURN isotopic abundance edit for all zones every neditall (p 245) * nedit (p 16) cycles regardless of the value of neditb (p 241).	
 246	chimin	float	1.e-6	mol/g	Minimum isotopic abundance that affects the calculation of the zonal timestep in the BURN coprocessor.	
 247	delchi	float	0.15	-	Maximum desired fractional change of an isotopic abundance used in determining the zonal timestep used in the BURN coprocessor.	
-248	fdtn	float	2.	-	Maximum factor by which the zonal timestep in the BURN	coprocessor can be increased in one zonal cycle.	
+248	fdtn	float	2.	-	Maximum factor by which the zonal timestep in the BURN coprocessor can be increased in one zonal cycle.	
 249	dtbkup	float	0.5	-	Back up to the previous zonal cycle in the BURN coprocessor if the new zonal timestep is less than dtbkup (p 249) times the previous timestep.	
 250	ncomp	integer	999999	-	Make a complete ASCII edit of the nuclear processes in all zones considered by the BURN coprocessor every NCOMP cycles.	
 251	ncent	integer	999999	-	Make an ASCII edit of the nuclear processes in the central zone considered by the BURN coprocessor every ncent (p 251) cycles.	
-252	nedt	integer	999999	-	Make an ASCII edit of the nuclear processes involved every nedt (p 252)	BURN coprocessor matrix inversions (debugging only).	
-253	nzro	integer	1	-	Set newly calculated negative BURN isotope abundances to 0.	if nzro (p 253) \(\ne\) 0.	
+252	nedt	integer	999999	-	Make an ASCII edit of the nuclear processes involved every nedt (p 252) BURN coprocessor matrix inversions (debugging only).	
+253	nzro	integer	1	-	Set newly calculated negative BURN isotope abundances to 0. if nzro (p 253) \(\ne\) 0.	
 254	amaglim	float	0.	-	Minimum absolute magnitude of a BURN matrix element for which Gauss-Jordan elimination is carried out in solving for changes in isotopic abundances.	
 255	ninv	integer	0	-	Total number of BURN-coprocessor matrix inversions so far (internally incremented).	
 256	nbkup	integer	0	-	Total number of BURN-coprocessor backups so far (internally incremented).	
@@ -263,7 +263,7 @@
 263	nbkupmax	integer	10	-	Maximum number of consecutive negative isotopic abundance backups allowed in the BURN coprocessor before quitting.	
 264	nsubcycm	integer	1	-	Number of coupled BURN co-processing / BURN isotope convection subcycles per KEPLER cycle.	
 265	mazful	integer	1	-	Use Fuller et. al.&#8217;s weak rates in the BURN coprocessor if mazful (p 265) \(=\) 1, otherwise use the old rates of Mazurek and Hansen.	
-266	al26mult	float	100.	-	Decrease the abundance threshold for Al26 to affect the BURN	coprocessor zonal timestep from chimin (p 246) to chimin (p 246)/ al26mult (p 266).	
+266	al26mult	float	100.	-	Decrease the abundance threshold for Al26 to affect the BURN coprocessor zonal timestep from chimin (p 246) to chimin (p 246)/ al26mult (p 266).	
 267	inburn	integer	0	-	BURN coprocessing and related edits are done only if inburn (p 267) \(&gt;\) 0.	
 268	npage	integer	53	-	Number of lines printed per &#8220;page&#8221; of ASCII output.	
 269	nsavez	integer	24	-	Total number of non-BURN zonal arrays to save in restart dumps.	
@@ -283,8 +283,8 @@
 283	sharpr	float	1.	cm/s	Minimum speed from convection.	
 284	sharp2	float	0.	-	Sharp2 parameter.	
 285	newflam	integer	0	-	(Edit only.).	
-286	taunu	integer	0	s	Time scale for the neutrino pulse considered by the BURN	coprocessor in calculating neutrino-induced nucleosynthesis after core collapse.	
-287	enu53	float	3.	1.e+53 erg	Total energy for the neutrino pulse considered by the BURN	coprocessor in calculating neutrino- induced nucleosynthesis after core collapse.	
+286	taunu	integer	0	s	Time scale for the neutrino pulse considered by the BURN coprocessor in calculating neutrino-induced nucleosynthesis after core collapse.	
+287	enu53	float	3.	1.e+53 erg	Total energy for the neutrino pulse considered by the BURN coprocessor in calculating neutrino- induced nucleosynthesis after core collapse.	
 288	tmunu	float	8.	MeV	Temperature of the \(\mu\) and \(\tau\) neutrinos in the neutrino pulse considered by the BURN coprocessor in calculating neutrino- induced nucleosynthesis after core collapse.	
 289	tenu	float	4.	MeV	Temperature of the electron neutrinos in the neutrino pulse considered by the BURN coprocessor in calculating neutrino-induced nucleosynthesis after core collapse.	
 290	noiland	integer	1	-	If noiland (p 290) \(&gt;\) 0, prevent separated islands of zones employing the ISE network from developing by not letting zone j go to ISE unless zone j - 1 has already done so.	
@@ -293,17 +293,17 @@
 293	charsizz	float	0.85	-	Graphics character size for zone sentinels (relative to MONGO&#8217;s default character size).	
 294	charsizh	float	1.	-	Graphics character size for header info (relative to MONGO&#8217;s default character size).	
 295	widthtd	float	60.	-	Obsolete.	
-296	ibackgnd	integer	-1	-	Graphics window background color is white if ibackgnd (p 296)	\(&lt;\) 0 and black if ibackgnd (p 296) \(&lt;\) 0.	
+296	ibackgnd	integer	-1	-	Graphics window background color is white if ibackgnd (p 296) \(&lt;\) 0 and black if ibackgnd (p 296) \(&lt;\) 0.	
 297	dscalem	float	1.9892e+33	g	Mass units used for the internal mass coordinate, ymass, used for dumping purpos~s.	
 298	ngridmin	integer	10	-	Minimum number of points allowed in a dump grid.	
 299	ncycqq	integer	5	-	Number of KEPLER cycles between post-processor dump cycles, i.e., calls to dumpq.	
 300	lentrack	integer	16384	byte	Length of the track(s) assigned to each dump variable in the post-processor dump(s).	
-301	idtmaxl	integer	40	-	Maximum number of post-processor dump cycles beyond the currently-specified dump cycle (LTIME) that readq	will search to try to get values for each point in the &#8216;advanced&#8217; grid formed from dump variable values at or beyond ltime.	
+301	idtmaxl	integer	40	-	Maximum number of post-processor dump cycles beyond the currently-specified dump cycle (LTIME) that readq will search to try to get values for each point in the &#8216;advanced&#8217; grid formed from dump variable values at or beyond ltime.	
 302	idtlook	integer	10	-	Default number of post-processor dump cycles between LOOK plots or prints or reconstructed TIMEMAP grids.	
 303	backfacq	float	0.5	-	If the fractional change in a dump variable since the last dump cycle exceeds backfacq (p 303) * ratzdump(IDAT), then also dump the old value of that variable at the previous (dump cycle) time point, where backfacq (p 303) * ratzdump(IDAT) is the (previously specified) maximum allowed fractional change between dumps of this zonal dump variable (indexed by idat).	
 304	tempstop	float	1.e+99	K	Terminate the problem when the central temperature reaches TEMPSTOP.	
 305	denstop	float	1.e+99	g/cm**3	Terminate the problem when the central density reaches denstop (p 305).	
-306	vinstop	float	1.e+99	cm/s	Terminate the problem when the infall velocity below vinstopm (p 462)	exceeds vinstop (p 306).	
+306	vinstop	float	1.e+99	cm/s	Terminate the problem when the infall velocity below vinstopm (p 462) exceeds vinstop (p 306).	
 307	o16stop	float	-1.	-	Terminate the problem when the o16 mass-fraction drops below o16stop (p 307) provided the central temperature exceeds tqselim (p 184).	
 308	timezms	float	1.e+99	s	Time at which to make the zero-age-main-sequence (ZAMS) parameter changes and restart dump (typically 1.e+12).	
 309	izonezms	integer	1	-	Reset the value of izonef (p 86) to izonezms (p 309) at the time specified by timezms (p 308).	
@@ -332,7 +332,7 @@
 332	o16odep	float	-1.e+99	-	If the central oxygen abundance is \(\ge\) o16odep (p 332) and the central temperature is \(\ge\) tqselim (p 184), then make a restart dump labelled #odep, execute the alias-defined odep command, and reset o16odep (p 332) to -1.e+99.	
 333	tempchar	float	1.e+99	K	If the central temperature is \(\ge\) tempchar (p 333), then make a restart dump labeled with #tn and the current cycle number, reset tempchar (p 333) to 1.e+99, and finally execute the alias-defined tnchar command.	
 334	denchar	float	1.e+99	g/cm**3	If the central density is \(\ge\) denchar (p 334), then make a restart dump labeled with #dn and the current cycle number, reset denchar (p 334) to 1.e+99, and finally execute the alias-defined dnchar command.	
-335	abarchar	float	1.e+99	-	If the central mean atomic weight (ABAR) is \(\ge\)	abarchar (p 335), then make a restart dump labelled with #ab	and the current cycle number, reset abarchar (p 335) to 1.e+99, and finally execute the alias-defined abchar command.	
+335	abarchar	float	1.e+99	-	If the central mean atomic weight (ABAR) is \(\ge\) abarchar (p 335), then make a restart dump labelled with #ab and the current cycle number, reset abarchar (p 335) to 1.e+99, and finally execute the alias-defined abchar command.	
 336	zonemmin	float	1.e-99	g	Minimum mass that a pair of zone may have and still be allowed to be adzoned.	
 337	icalcne	integer	0	-	Calculate more accurate electron densities in partially ionized regions if icalcne (p 337) \(&gt;\) 0 using Lisa Ensman&#8217;s multiple-ion, Saba equilibrium subroutine, CALCNE.	
 338	xneconv	float	1.e-5	-	Maximum allowable fractional convergence error in the electron density calculated by subroutine calcne.	
@@ -392,14 +392,14 @@
 392	xl0limf	float	4.	-	Multiplier on limiting flux in radiation flux limiter.	
 393	xl0limk	float	0.	-	Limiting flux multiplied by.	
 394	llimout	integer	1	-	Limit to radiative flux of outer zone only if set to 1 (old behaviour), otherwise limit to flux of the hotter zone (upper or lower).	
-395	nenout	integer	0	-	Write out total energies in file nameprob.ent	every nenout cycles.  Set to zero to turn off.	
+395	nenout	integer	0	-	Write out total energies in file nameprob.ent every nenout cycles.  Set to zero to turn off.	
 396	ipromin	integer	1	-	Minimum zone for production factor/yield plot.	
 397	ipromax	integer	99999	-	Maximum zone for production factor/yield plot.	
 398	iprownd	integer	1	-	Take into account wind when computing production factors/yields.	
 399	iproyld	integer	0	-	Determines the BURN abundance plot type (plot 9).	
 400	minapro	integer	-1000	-	Minimum mass number for production factor/yield plot; automatic determination if set \(-99\).	
 401	maxapro	integer	-1000	-	Maximum mass number for production factor/yield plot; automatic determination if set LE -99.	
-402	proymin	float	1.e-10	-	Minimum value for yield in BURN plot types 1, 2 and 6	(iproyld (p 399)).	
+402	proymin	float	1.e-10	-	Minimum value for yield in BURN plot types 1, 2 and 6 (iproyld (p 399)).	
 403	proymax	float	1000.	-	Maximum value for yield in BURN plot types 1, 2 and 6 (iproyld (p 399)).	
 404	xkdmin	float	1.e-20	-	Minimum value for density used in subroutine kappa.	
 405	h1hdep	float	0.01	-	Central hydrogen abundance at which the #hdep dump is made.	
@@ -461,8 +461,8 @@
 461	accmassf	float	1.4142	-	The mass of newly accreted zone is may not differ by more than a factor (or fraction) accmassf (p 461) from the current outermost zone.	
 462	vinstopm	float	1.e+99	-	
 463	lowamul	integer	0	-	Minimum mass number for which weak rates are modified.	
-464	pdmult	float	1.	-	Multiplier on positron decay/electron capture rate for lowamul (p 463)	\(\leq\) ihwamul (p 466).	
-465	edmult	float	1.	-	Multiplier on electron decay rate for lowamul (p 463) \(\leq\)	ihwamul (p 466).	
+464	pdmult	float	1.	-	Multiplier on positron decay/electron capture rate for lowamul (p 463) \(\leq\) ihwamul (p 466).	
+465	edmult	float	1.	-	Multiplier on electron decay rate for lowamul (p 463) \(\leq\) ihwamul (p 466).	
 466	ihwamul	integer	0	-	Maximum mass number for which weak rates are modified.	
 467	kapburn	integer	0	-	Use of BURN abundances for opacity.	
 468	fackap	float	1.	-	Multiply opacity and its derivatives by fackap (p 468).	
@@ -474,11 +474,11 @@
 474	minnucg	integer	-1	-	log of minimum nuclear energy generation for .cnv output file.	
 475	mingaind	integer	21	-	log of minimum energy generation (nuclear + neutrinos) per cm for .cnv output file.	
 476	minlossd	integer	21	-	
-477	minnucgd	integer	21	-	log of minimum nuclear energy generation per cm for .cnv	output file.	
-478	minnucld	integer	21	-	log of minimum nuclear energy loss per cm for .cnv	output file.  output file.	
+477	minnucgd	integer	21	-	log of minimum nuclear energy generation per cm for .cnv output file.	
+478	minnucld	integer	21	-	log of minimum nuclear energy loss per cm for .cnv output file.  output file.	
 479	tweakmin	float	0.5	1.e+9 K	Minimum temperature  for weak rates.	
 480	centmult	float	0.	-	Multiplier on simplistic centrifugal force.	
-481	mixout	integer	0	-	Write out mixing file nameprob.mix every mixout (p 481)	cycles.	
+481	mixout	integer	0	-	Write out mixing file nameprob.mix every mixout (p 481) cycles.	
 482	irprox	integer	1	-	Determine use of RPROX network.	
 483	n14pg	integer	0	-	If set to one, multiply the first term of the CF88 N14(p,g) rate by 0.54.	
 484	r3amult	float	1.	-	Multiplier on triple-alpha reaction rate.	
@@ -561,10 +561,11 @@
 561	xheatl	float	0.	erg/s	Rate of energy deposition from extra heating.	
 562	xheatym	float	-1.e+99	g	Center of mass where energy is deposited; mass is measured relative to surface.	
 563	xheatdm	float	0.	g	Width (Gaussian) in mass where energy is deposited.
-564	osfactor	float	1.	-	Factor to multiply Brummell et al. 2002 prescription for overshooting length (only active if brumoson > 0)
-565	osherwig	float	0.	-	Factor to multiply pressure scale height for overshoot length (only active if osfactor == 0 and brumoson > 0)
-566	osmin	float	0.	cm**2/s	Minimum diffusion coefficient for overshoot
-567	scpower	float	1.	-	Power on density ratio for semi-convection length
-568	scfactor	float	1.	-	Multiplier on semi-convection length
-569	brumoson	float	0.	-	Turn Brummell et al. 2002 overshoot on if > 0.
-570	woodscon	float	0.	-	Turn Wood et al. 2013 semi-convection on if > 0.
+564	rmaxeadv	float	1.e99	-	None	170013
+565	osfactor	float	1.	-	Factor to multiply Brummell et al. 2002 prescription for overshooting length (only active if brumoson > 0)
+566	osherwig	float	0.	-	Factor to multiply pressure scale height for overshoot length (only active if osfactor == 0 and brumoson > 0)
+567	osmin	float	0.	cm**2/s	Minimum diffusion coefficient for overshoot
+568	scpower	float	1.	-	Power on density ratio for semi-convection length
+569	scfactor	float	1.	-	Multiplier on semi-convection length
+570	brumoson	float	0.	-	Turn Brummell et al. 2002 overshoot on if > 0.
+571	woodscon	float	0.	-	Turn Wood et al. 2013 semi-convection on if > 0.

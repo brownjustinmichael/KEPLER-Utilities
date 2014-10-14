@@ -5,42 +5,67 @@ import inspect
 
 import astropy.units as u
 import sqlalchemy
-from sqlalchemy.ext.declarative import declarative_base, DeferredReflection
+from sqlalchemy.ext.declarative import declarative_base
 
 import records.dump
 import records.cnv
 
-__location__ = os.path.realpath (os.path.join (os.getcwd (), os.path.dirname (__file__)))
-
+# Start the database engine with a database called dumpfiles.db in the current directory
 engine = sqlalchemy.create_engine ('sqlite:///' + os.path.join (os.getcwd (), 'dumpfiles.db'), echo = False)
-# Base = declarative_base ()
-Base = declarative_base (DeferredReflection)
+
+# Setup the declarative base class for inheritance
+Base = declarative_base ()
+
+# Create a session class that's bound to the above engine
 Session = sqlalchemy.orm.sessionmaker (bind = engine)
 
+# A conversion from string to sqlalchemy types
+types = {'float' : sqlalchemy.Float, 'integer' : sqlalchemy.Integer}
+
 class setup_parameters:
+    """
+    This decorator is designed to take a parameter file with the following tab-separated format:
+    ParamNumber	ParamName	(float or integer)	defaultValue	unit	Description with lots of words	versionNumberAdded
+    
+    It will add an appropriate column to a SQL table for each parameter in the file
+    
+    It will also add (or add to) a list called parameters such that it contains all the imported parameters
+    """
     def __init__ (self, file):
+        """
+        Save the parameter file name
+        """
         self.file = file
     
     def __call__ (self, cls):
-        if not cls.loaded:
-            parameter_file = open (self.file, 'r')
-            parameters = []
-            for line in parameter_file:
-                words = line.split ('\t')
-                if words [0] [0] == '#':
-                    continue
-                parameters.append (words [1])
-                if words [2] == 'float':
-                    setattr (cls, words [1], sqlalchemy.Column (words [1], sqlalchemy.Float))
-                elif words [2] == 'integer':
-                    setattr (cls, words [1], sqlalchemy.Column (words [1], sqlalchemy.Integer))
-                else:
-                    assert (False)
-            try:
-                old_params = getattr (cls, 'parameters')
-                setattr (cls, 'parameters', old_params + parameters)
-            except AttributeError:
-                setattr (cls, 'parameters', parameters)
+        """
+        Load the parameters from the saved file name
+        """
+        # Open the file and create the parameter list
+        parameter_file = open (self.file, 'r')
+        parameters = []
+        
+        # Iterate through the lines in the file
+        for line in parameter_file:
+            words = line.split ('\t')
+            if words [0] [0] == '#':
+                # Skip commented lines
+                continue
+                
+            # Add the new parameter to the parameters list
+            parameters.append (words [1])
+            
+            # Add the parameter attribute to the class
+            setattr (cls, words [1], sqlalchemy.Column (words [1], types [words [2]]))
+            
+        try:
+            # Try adding the parameter list to the old one in the class
+            old_params = getattr (cls, 'parameters')
+            setattr (cls, 'parameters', old_params + parameters)
+        except AttributeError:
+            # If there is no old parameter list, add a new one
+            setattr (cls, 'parameters', parameters)
+            
         return cls
 
 @setup_parameters (records.dump.pfile)
@@ -70,6 +95,16 @@ class SimulationEntry (Base):
         for param in self.parameters:
             if getattr (self, param) != getattr (entry, param):
                 setattr (self, param, None)
+
+# class FileEntry (Base):
+#     __abstract__ = True
+#     file = sqlalchemy.Column (sqlalchemy.String, primary_key=True)
+#     date = sqlalchemy.Column (sqlalchemy.DateTime)
+#     simulation = sqlalchemy.orm.relationship ("SimulationEntry")
+#
+#     @sqlalchemy.reconstructor
+#     def init_on_load (self):
+#         self.dataobject = None
 
 @setup_parameters (records.dump.pfile)
 @setup_parameters (records.dump.qfile)
