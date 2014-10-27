@@ -11,11 +11,11 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 import records.dump
 import records.cnv
 
-# Start the database engine with a database called dumpfiles.db in the current directory
-engine = sqlalchemy.create_engine ('sqlite:///' + os.path.join (os.getcwd (), 'dumpfiles.db'), echo = False)
-
 # Setup the declarative base class for inheritance
 Base = declarative_base ()
+
+# Start the database engine with a database called dumpfiles.db in the current directory
+engine = sqlalchemy.create_engine ('sqlite:///' + os.path.join (os.getcwd (), 'dumpfiles.db'), echo = False)
 
 # Create a session class that's bound to the above engine
 Session = sqlalchemy.orm.sessionmaker (bind = engine)
@@ -140,10 +140,10 @@ class SimulationEntry (Base):
     __tablename__ = 'simulations'
     
     id = sqlalchemy.Column (sqlalchemy.Integer, primary_key=True)
-    runid = sqlalchemy.Column(sqlalchemy.LargeBinary)
+    runid = sqlalchemy.Column(sqlalchemy.LargeBinary, nullable = True)
     name = sqlalchemy.Column (sqlalchemy.String)
     path = sqlalchemy.Column (sqlalchemy.String)
-    loaded = sqlalchemy.Column (sqlalchemy.Boolean)
+    loaded = sqlalchemy.Column (sqlalchemy.Boolean, default = False)
     
     def __repr__ (self):
         return "<SimulationEntry(name='%s', id=%s)>" % (self.name, str (self.id))
@@ -192,8 +192,8 @@ class FileEntry (object):
     date = sqlalchemy.Column (sqlalchemy.DateTime)
     
     @declared_attr
-    def simulation_runid(cls):
-        return sqlalchemy.Column ('simulation_runid', sqlalchemy.ForeignKey('simulations.runid'))
+    def simulation_id(cls):
+        return sqlalchemy.Column ('simulation_id', sqlalchemy.ForeignKey('simulations.id'))
     
     @declared_attr
     def simulation (cls):

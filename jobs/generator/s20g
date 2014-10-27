@@ -1,4 +1,4 @@
-c 15 solar mass star
+c 20 solar mass star
 c solar composition- revised 2004
 c
 c box and id information:
@@ -23,35 +23,7 @@ m  sol    0.0    ni56
 c
 c initial grid (zone #, exterior mass(g), network #,...
 c ... temp(K), rho(g/cc), [omega(1/s)[, u(cm/s)]])
-g    0 -1.50000E+01 1  sol  6.000E+06  1.000E-01  0.000E+00  0.000E+00
-g    1 -1.49980E+01 1  sol  5.000E+06  8.000E-02
-g    2 -1.49950E+01 1  sol  5.000E+06  8.000E-02
-g    3 -1.49900E+01 1  sol  5.000E+06  8.000E-02
-g    4 -1.49850E+01 1  sol  5.000E+06  8.000E-02
-g    5 -1.49800E+01 1  sol  5.000E+06  8.000E-02
-g    6 -1.49750E+01 1  sol  5.000E+06  8.000E-02
-g    7 -1.49700E+01 1  sol  5.000E+06  8.000E-02
-g    8 -1.49640E+01 1  sol  5.000E+06  8.000E-02
-g    9 -1.49580E+01 1  sol  5.000E+06  8.000E-02
-g  401 -1.26060E+01 1  sol  1.000E+06  5.500E-02
-g  402 -1.26000E+01 1  sol  1.000E+06  5.500E-02
-g  436 -1.23800E+01 1  sol  1.000E+06  5.000E-02
-g  437 -1.23730E+01 1  sol  1.000E+06  5.000E-02
-g  561 -1.15070E+01 1  sol  1.000E+06  5.000E-02
-g  562 -1.15000E+01 1  sol  1.000E+06  5.000E-02
-g  594 -1.12000E+01 1  sol  1.000E+06  5.000E-02
-g  595 -1.11880E+01 1  sol  1.000E+06  5.000E-02
-g  693 -1.00120E+01 1  sol  1.000E+06  5.000E-02
-g  694 -1.00000E+01 1  sol  1.000E+06  5.000E-02
-g  775 -8.10000E+00 1  sol  3.000E+05  3.500E-02
-g  776 -8.06500E+00 1  sol  3.000E+05  3.500E-02
-g  829 -6.20000E+00 1  sol  3.000E+05  3.500E-02
-g  883 -4.30000E+00 1  sol  3.000E+05  3.200E-02
-g  937 -2.40000E+00 1  sol  1.000E+05  3.000E-02
-g  938 -2.36500E+00 1  sol  1.000E+05  3.000E-02
-g 1002 -5.00000E-01 1  sol  1.000E+04  2.000E-02
-g 1028 -5.00000E-02 1  sol  1.000E+04  1.000E-02
-g 1038 -5.00000E-03 1  sol  1.000E+04  6.000E-03
+g    0 -2.00000E+01 1  sol  6.000E+06  1.000E-01  0.000E+00  0.000E+00
 g 1048 -0.00000E+00 1  sol  5.000E+03  1.000E-03  0.000E+00  0.000E+00
 c
 c specify burn-generator-file name to turn on isotopic co-processing
@@ -244,11 +216,16 @@ c use Y_e from BURN
 p 357 1
 p 429 1
 c
+c overshoot filling factor
+p 515 0.0d0
+c
+c semi-convective layer height
+p 516 0.0d0
+c
 p 73 1.0d99
 c set path to nuclear data
 datapath '/Users/justinbrown/Codes/kepler_banzai/source/data'
 c map burn abundances into approx
 c p 434 1
-c p 426 1.d99
 
 p hstatym 1.d33

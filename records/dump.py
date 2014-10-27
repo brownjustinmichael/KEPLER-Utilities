@@ -123,7 +123,10 @@ class Dump (object):
         """
         Read a single double from self.file, kind is the fortran kind of real to read (8 possible)
         """
-        return struct.unpack ('>' + str (1) + 'd', self.file.read (8)) [0]
+        if kind == 8:
+            return struct.unpack ('>' + str (1) + 'd', self.file.read (8)) [0]
+        if kind == 4:
+            return struct.unpack ('>' + str (1) + 'f', self.file.read (4)) [0]
 
     def _readDoubles (self, num, kind = 8):
         """
@@ -164,12 +167,12 @@ class Dump (object):
         """
         
         # Read off the first few bytes
-        self._readInt ()
+        test = self._readInt ()
         
         # Check the version; this is only designed to read dump files from versions as early as 170011
         self.version = self._readInt ()
         print ("Version is " + str (self.version))
-        assert (self.version >= 170010)
+        # assert (self.version >= 170010)
         
         # Read the header information
         self._readHeader ()
@@ -206,15 +209,18 @@ class Dump (object):
         self._skip ((self.jmsave - 1) * 8)
         
         # Read in UUIDs
-        self.uuidrun, self.uuidcycle, self.uuiddump, self.uuidprev, self.uuidprog, self.uuidexec = self._readStrings (6, 16, True)
-        self.nuuidhist = self._readInt (16)
-        self.uuidhist = [self._readStrings (self.nuuidhist, 16, True) for i in range (6)]
+        if self.version >= 170004:
+            self.uuidrun, self.uuidcycle, self.uuiddump, self.uuidprev, self.uuidprog, self.uuidexec = self._readStrings (6, 16, True)
+            self.nuuidhist = self._readInt (16)
+            self.uuidhist = [self._readStrings (self.nuuidhist, 16, True) for i in range (6)]
+        else:
+            self.uuidrun = None
         
     def _readHeader (self):
         """
         Read in the header of the dump file and set the appropriate variables
         """
-        self.ncyc = self._readInt () 
+        self.ncyc = self._readInt ()
         self.lenHeader, self.maxZones, self.maxBurnZones, self.nburn, self.iratioz, self.nvar = self._readInts (6)
         self.nheadz, self.nhead, self.numParameters, self.nparm, self.numDerivedParameters, self.nqparm = self._readInts (6)
         self.numNetworks, self.maxNetworkIons, self.numTotalIons, self.numNetworksb, self.maxNetworkIonsb, self.numTotalIonsb = self._readInts (6)
@@ -223,7 +229,8 @@ class Dump (object):
         self.numNetworkIons, self.numBurnIons, self.nreac, self.jmsave, self.lencom, self.lencomc = self._readInts (6)
         self.nedtcom, self.ndatqz, self.ngridz, self.nylibz, self.nyoffst = self._readInts (5)
         self.lenshed, self.lenqhed, self.nzedz, self.ncsavdz = self._readInts (4)
-        self._readInts (self.iratioz * self.lenHeader - 45)
+        things = self._readInts (self.iratioz * self.lenHeader - 47)
+        self._readDouble ()
         self._readDouble ()
             
     def _readParameters (self, dic, numParameters, tableFile, comment = '#', unitCol = 4, defaultCol = 3):
@@ -381,14 +388,16 @@ class DataDump (Dump):
         self.stardata ['sadv'] [:-1] = self._readDoubles (self.jmsave + 1) [:-1]
         
         # Skip UUID information
-        self._skip (6 * 16 + 8 + 16 * 6 * self.nuuidhist)
-        self._readDoubles (1)
+        if self.version >= 170004:
+            self._skip (6 * 16 + 8 + 16 * 6 * self.nuuidhist)
+            self._readDoubles (1)
         
         # TODO Implement log data reader
-        self.nlog = self._readInt ()
-        self._readInt ()
-        assert (self.nlog == 0)
-        self._readDouble ()
+        if (self.version >= 168450):
+            self.nlog = self._readInt ()
+            self._readInt ()
+            assert (self.nlog == 0)
+            self._readDouble ()
         
         # Read energy dissipation due to shear
         self.stardata ['sv'] = numpy.zeros (self.jmsave + 1)
@@ -399,7 +408,7 @@ class DataDump (Dump):
         self.data ['noparm'] = self._readInt ()
         assert (self.data ['noparm'] == 0)
         self._readDoubles (1)
-        if (self.parameters ['imaxb'] <= 0):
+        if (self.parameters ['imaxb'] <= 0 or loadBurn == False):
             loadBurn = False
         else:
             self._readInt ()
