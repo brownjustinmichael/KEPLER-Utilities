@@ -2,7 +2,7 @@ import os
 import subprocess
 import glob
 
-import database
+import database.database
 
 class Generator (object):
     """docstring for Generator """
@@ -63,7 +63,7 @@ class Simulation (object):
         return subprocess.Popen ([self.command, self.name, self.name + 'g'], cwd = self.run_location)
         
     def rebase (self):
-        database.DumpFileEntry.scan_for_updates (self.run_location, self.name)
-        database.CNVFileEntry.scan_for_updates (self.run_location, self.name)
+        database.database.DumpFileEntry.scan_for_updates (self.run_location, self.name)
+        database.database.CNVFileEntry.scan_for_updates (self.run_location, self.name)
         
 # Simulation ("s15o.1s1", Generator (osfactor = 0.1, scpower = 1.0), run_location = 'generator', command = '/Users/justinbrown/Codes/kepler/run/kepler')

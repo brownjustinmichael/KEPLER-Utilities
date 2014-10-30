@@ -8,15 +8,15 @@ import jobs.generate as generate
 import jobs.kepler_jobs as kepler_jobs
 
 session = database.Session ()
-mass_query = session.query (database.DumpFileEntry).filter (database.DumpFileEntry.binm10 > 14.9).filter (database.DumpFileEntry.binm10 < 15.1).filter (database.DumpFileEntry.brumoson > 0.0).filter (database.DumpFileEntry.woodscon > 0.0).filter (database.DumpFileEntry.state == 'presn')
+mass_query = session.query (database.DumpFileEntry).filter (database.DumpFileEntry.binm10 > 19.9).filter (database.DumpFileEntry.binm10 < 20.1).filter (database.DumpFileEntry.brumoson > 0.0).filter (database.DumpFileEntry.woodscon > 0.0).filter (database.DumpFileEntry.state == 'presn')
 
 sc_range = np.arange (-3, 4)
 os_range = np.arange (0.1, 1.1, 0.1)
 
-generator = os.path.join(os.path.dirname(os.path.realpath(__file__)), "jobs/generator/s15g")
+generator = os.path.join(os.path.dirname(os.path.realpath(__file__)), "jobs/generator/s20g")
 
 command = "/Users/justinbrown/Codes/kepler/run/kepler"
-run_location = "/Users/justinbrown/Codes/kepler/run/s15"
+run_location = "/Users/justinbrown/Codes/kepler/run/s20"
 
 sets = []
 
@@ -32,6 +32,11 @@ random.shuffle (sets)
 
 sims = []
 
+for sc in sc_range:
+    name = "s20h" + ("%d" % sc)
+    print ("Will run SC = ", str (2. ** sc))
+    kepler_jobs.run.delay (name, generator, run_location, command, force = True, scpower = 2. ** sc, osherwig = 0.01)
+
 for os, sc in sets:
-    name = "s15o" + ("%.1f" % os).lstrip ("0").rstrip ("0") + "%d" % math.log (sc, 2)
+    name = "s20o" + ("%.1f" % os).lstrip ("0").rstrip ("0") + "%d" % math.log (sc, 2)
     kepler_jobs.run.delay (name, generator, run_location, command, force = True, scpower = sc, osfactor = os)

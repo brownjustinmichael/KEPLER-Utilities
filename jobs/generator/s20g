@@ -227,5 +227,3 @@ c set path to nuclear data
 datapath '/Users/justinbrown/Codes/kepler_banzai/source/data'
 c map burn abundances into approx
 c p 434 1
-
-p hstatym 1.d33

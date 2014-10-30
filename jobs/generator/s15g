@@ -250,5 +250,3 @@ datapath '/Users/justinbrown/Codes/kepler_banzai/source/data'
 c map burn abundances into approx
 c p 434 1
 c p 426 1.d99
-
-p hstatym 1.d33
