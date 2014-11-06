@@ -8,7 +8,7 @@ import matplotlib.colors as clrs
 import sqlalchemy
 
 import records.cnv
-import database.database
+import database.database as db
 import database.cache
 import plots.kipp
 import plots.abundances
@@ -16,13 +16,13 @@ import plots.abundances
 def numToSize (num):
     return 100 * (-np.log2 (num) + 3.5)
 
-session = database.database.Session ()
+session = db.Session ()
 
-query = database.database.basicQuery (session).filter (database.database.DumpFileEntry.binm10 > 14.9).filter (database.database.DumpFileEntry.binm10 < 15.1)
-query = query.filter (database.database.DumpFileEntry.brumoson > 0.).filter (database.database.DumpFileEntry.woodscon > 0.)
-query = query.filter (database.database.DumpFileEntry.osfactor >= 0.09).filter (database.database.DumpFileEntry.osfactor <= 1.1)
-query = query.filter (database.database.DumpFileEntry.scpower >= 0.1).filter (database.database.DumpFileEntry.scpower <= 8.1)
-query = query.filter (database.database.DumpFileEntry.state == 'presn').filter (database.database.SimulationEntry.cnvfiles.any ())
+query = db.basicQuery (session).filter (db.DumpFileEntry.binm10 > 19.9).filter (db.DumpFileEntry.binm10 < 20.1)
+query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.)
+query = query.filter (db.DumpFileEntry.osfactor >= 0.09).filter (db.DumpFileEntry.osfactor <= 1.1)
+query = query.filter (db.DumpFileEntry.scpower >= 0.1).filter (db.DumpFileEntry.scpower <= 8.1)
+query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
 entries = [entry for sim, entry in query.all ()]
 # data = [entry.get_data () for entry in entries]
@@ -123,7 +123,7 @@ def onclick (event):
     if time is None:
         return
     
-    for entry in session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.simulation == sims [i]).order_by (database.database.DumpFileEntry.toffset, database.database.DumpFileEntry.time).all ():
+    for entry in session.query (db.DumpFileEntry).filter (db.DumpFileEntry.simulation == sims [i]).order_by (db.DumpFileEntry.toffset, db.DumpFileEntry.time).all ():
         if u.Quantity (entry.time + entry.toffset, 's') > u.Quantity (time, 'year'):
             newfig = plots.abundances.jTDPlot (entry.file)
             newfig.canvas.mpl_connect('close_event', onabunclose)

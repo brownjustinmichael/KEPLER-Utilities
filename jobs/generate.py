@@ -1,8 +1,10 @@
 import os
 import subprocess
 import glob
+import hashlib
+import time
 
-import database.database
+import database.database as db
 
 class Generator (object):
     """docstring for Generator """
@@ -15,7 +17,7 @@ class Generator (object):
         
         self.original = original
         
-    def generate (self, new_file, force = False, **kwargs):
+    def generate (self, new_file, force = False, query = False, **kwargs):
         parameters = kwargs
         # parameters = {'scpower' : scpower, 'osfactor' : osfactor}
         
@@ -28,8 +30,23 @@ class Generator (object):
             
         if ('osfactor' in parameters or 'osherwig' in parameters) and 'brumoson' not in parameters:
             parameters ['brumoson'] = 1.0
+            
+        if ('osherwig' in parameters):
+            parameters ['osfactor'] = 0.0
         
-        print ("Generating")
+        if query:
+            session = db.Session ()
+            query = session.query (db.SimulationEntry).filter (db.SimulationEntry.template_name == self.original).filter (db.SimulationEntry.template_hash == hashlib.md5 (open (self.original).read ().encode ()).hexdigest ()).filter (db.SimulationEntry.complete == True)
+            for param in parameters:
+                if type (parameters [param]) == float:
+                    query = query.filter (getattr (db.SimulationEntry, param) > parameters [param] * 0.99)
+                    query = query.filter (getattr (db.SimulationEntry, param) < parameters [param] * 1.01)
+                else:
+                    query = query.filter (getattr (db.SimulationEntry, param) == parameters [param])
+            if query.count () != 0:
+                raise TypeError ("Simulation already exists")
+            session.close ()
+                
         if os.path.isfile (new_file):
             if not force:
                 raise NameError ("File already exists")
@@ -56,14 +73,19 @@ class Simulation (object):
         self.command = command
         self.run_location = run_location
         self.name = name
-        print ("DONE")
         
-    def run (self, **kwargs):
-        self.generator.generate (os.path.join (self.run_location, self.name + 'g'), self.force, **kwargs)
+    def run (self, query = False, **kwargs):
+        self.generator.generate (os.path.join (self.run_location, self.name + 'g'), self.force, query = query, **kwargs)
         return subprocess.Popen ([self.command, self.name, self.name + 'g'], cwd = self.run_location)
         
-    def rebase (self):
-        database.database.DumpFileEntry.scan_for_updates (self.run_location, self.name)
-        database.database.CNVFileEntry.scan_for_updates (self.run_location, self.name)
+    def rebase (self, tags = None):
+        while True:
+            try:
+                db.DumpFileEntry.scan_for_updates (self.run_location, self.name + "#*", tags, template_name = self.generator.original)
+                db.CNVFileEntry.scan_for_updates (self.run_location, self.name + ".cnv", tags, template_name = self.generator.original)
+                return
+            except:
+                print ("There was an issue. Retrying in 5 seconds...")
+                time.sleep (5)
         
 # Simulation ("s15o.1s1", Generator (osfactor = 0.1, scpower = 1.0), run_location = 'generator', command = '/Users/justinbrown/Codes/kepler/run/kepler')

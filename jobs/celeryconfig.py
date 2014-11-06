@@ -1,3 +1,5 @@
+from kombu import Exchange, Queue
+
 BROKER_URL = 'amqp://guest@localhost//'
 CELERY_RESULT_BACKEND = 'amqp://'
 
@@ -7,4 +9,10 @@ CELERY_ACCEPT_CONTENT=['json']
 CELERY_TIMEZONE = 'US/Pacific'
 CELERY_ENABLE_UTC = True
 
-CELERYD_CONCURRENCY = 4
+CELERYD_CONCURRENCY = 1
+
+CELERY_DEFAULT_QUEUE = 'default'
+CELERY_QUEUES = (
+    Queue ('default', Exchange ('default'), routing_key = 'default'),
+    Queue ('priority', Exchange ('priority'), routing_key = 'priority'),
+)

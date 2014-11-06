@@ -3,6 +3,7 @@ import glob
 import datetime
 import inspect
 import abc
+import hashlib
 
 import astropy.units as u
 import sqlalchemy
@@ -131,6 +132,8 @@ class Cache (object):
         
         setattr (entrycls, "cache", cache)
         return entrycls
+        
+sim_tags = sqlalchemy.Table ('sim_tags', Base.metadata, sqlalchemy.Column ('sim_id', sqlalchemy.Integer, sqlalchemy.ForeignKey ('simulations.id')), sqlalchemy.Column ('tag_id', sqlalchemy.Integer, sqlalchemy.ForeignKey ('tags.id')))
 
 @setup_parameters (records.dump.pfile)
 class SimulationEntry (Base):
@@ -144,6 +147,11 @@ class SimulationEntry (Base):
     name = sqlalchemy.Column (sqlalchemy.String)
     path = sqlalchemy.Column (sqlalchemy.String)
     loaded = sqlalchemy.Column (sqlalchemy.Boolean, default = False)
+    complete = sqlalchemy.Column (sqlalchemy.Boolean, default = False)
+    template_name = sqlalchemy.Column (sqlalchemy.String, nullable = True)
+    template_hash = sqlalchemy.Column (sqlalchemy.String, nullable = True)
+    
+    tags = sqlalchemy.orm.relationship ('Tag', secondary = sim_tags, backref = 'sims')
     
     def __repr__ (self):
         return "<SimulationEntry(name='%s', id=%s)>" % (self.name, str (self.id))
@@ -174,15 +182,15 @@ class SimulationEntry (Base):
             if getattr (self, param) != getattr (entry, param):
                 setattr (self, param, None)
 
-@sqlalchemy.event.listens_for(Session, 'after_flush')
-def delete_sim_orphans(session, ctx):
-    """
-    A simulation can only exist if it contains at least one file. After flushing the session, delete any orphaned simulations
-    """
-    session.query(SimulationEntry).\
-        filter(~SimulationEntry.dumpfiles.any()).\
-        filter(~SimulationEntry.cnvfiles.any()).\
-        delete(synchronize_session=False)
+# @sqlalchemy.event.listens_for(Session, 'after_flush')
+# def delete_sim_orphans(session, ctx):
+#     """
+#     A simulation can only exist if it contains at least one file. After flushing the session, delete any orphaned simulations
+#     """
+#     session.query(SimulationEntry).\
+#         filter(~SimulationEntry.dumpfiles.any()).\
+#         filter(~SimulationEntry.cnvfiles.any()).\
+#         delete(synchronize_session=False)
 
 class FileEntry (object):
     """
@@ -217,51 +225,77 @@ class FileEntry (object):
         pass
         
     @classmethod
-    def update_database (cls, session, file_name):
+    def update_database (cls, session, file_name, tags = None, template_name = None, goal_state = 'presn', log_info = False):
         """
         Check whether a file should be added to the database, and do so
         """
+        real_tags = []
+        if isinstance (tags, str):
+            tags = [tags]
+        if tags is not None:
+            for tag in tags:
+                real_tags.append (Tag.get (session, tag))
+        
+        template_hash = None
+        if template_name is not None:
+            template_hash = hashlib.md5 (open (template_name).read ().encode ()).hexdigest ()
+        
         # Get the absolute path to the file
         file = os.path.abspath (file_name)
-        print ("Checking for file " + file + " in database")
+        if log_info:
+            print ("Checking for file " + file + " in database")
         
         try:
             # Check that there is not a newer or equivalent file in the database already
             oldentry = session.query (cls).filter_by (file = file).one ()
             if oldentry.date >= datetime.datetime.fromtimestamp (os.path.getmtime(file)):
-                print ("Newer or equivalent file in database: skipping")
+                if log_info:
+                    print ("Newer or equivalent file in database: skipping")
+                for tag in real_tags:
+                    if tag not in oldentry.simulation.tags:
+                        oldentry.simulation.tags.append (tag)
+                # oldentry.simulation.template_name = template_name
+                # oldentry.simulation.template_hash = template_hash
                 return
             else:
                 # If there's an older file, be sure to delete it
                 session.delete (oldentry)
         except sqlalchemy.orm.exc.NoResultFound:
-            print ("File not found in database: adding")
-            pass
+            if log_info:
+                print ("File not found in database: adding")
             
         # If we've arrived here, we'll need to add a new entry to the database.
         # Load the data from the file
         entry, runid, name = cls.genFromFile (file)
-        session.commit ()
         
         try:
-            print ("Checking for a corresponding simulation in the database...")
+            # print ("Checking for a corresponding simulation in the database...")
             if runid is None:
                 simulation = session.query (SimulationEntry).filter_by (name = name).one ()
             else:
                 simulation = session.query (SimulationEntry).filter_by (runid = runid).one ()
         except sqlalchemy.orm.exc.MultipleResultsFound:
-            print ("Multiple possible simulations in database, skipping")
+            if log_info:
+                print ("Multiple possible simulations in database, skipping")
             return
         except sqlalchemy.orm.exc.NoResultFound:
-            print ("No appropriate simulation found: creating")
-            simulation = SimulationEntry (runid = runid, name = name, path = os.path.dirname (file))
+            if log_info:
+                print ("No appropriate simulation found: creating")
+            simulation = SimulationEntry (runid = runid, name = name, path = os.path.dirname (file), template_name = template_name, template_hash = template_hash)
             session.add (simulation)
+        for tag in real_tags:
+            if tag not in simulation.tags:
+                simulation.tags.append (tag)
+        try:
+            simulation.get_state_dump (goal_state)
+            simulation.complete = True
+        except IndexError:
+            pass
         entry.addToSimulation (simulation)
         session.add (entry)
-        session.commit ()
         
     @classmethod
-    def scan_for_updates (cls, directory, glob_string = '*'):
+    def scan_for_updates (cls, directory, glob_string = '*', tags = None, template_name = None, log_info = False):
         """
         Scan the directory for files matching glob_string and add them to the database
         """
@@ -272,23 +306,30 @@ class FileEntry (object):
         for entry in session.query (cls).all ():
             if not os.path.isfile (entry.file):
                 # If the file has been deleted, removed the entry from the database
-                print ("File " + entry.file + " has been deleted: removing from database")
+                if log_info:
+                    print ("File " + entry.file + " has been deleted: removing from database")
                 session.delete (entry)
-                session.commit ()
         
         # If any files match the glob string in the current directory, send them to update_database
         for file in glob.glob (os.path.join (directory, glob_string)):
-            cls.update_database (session, file)
+            cls.update_database (session, file, tags, template_name = template_name)
             
         # If any files match the glob string in any subdirectories, send them to update_database
         for root, dirs, files in os.walk (directory):
             for direct in dirs:
                 direct = os.path.join (root, direct)
-                print ("Searching in " + direct + " for " + os.path.join (direct, glob_string))
+                if log_info:
+                    print ("Searching in " + direct + " for " + os.path.join (direct, glob_string))
                 for file in glob.glob (os.path.join (direct, glob_string)):
-                    cls.update_database (session, file)
-                    
-        session.commit ()
+                    cls.update_database (session, file, tags, template_name = template_name)
+        
+        try:
+            session.commit ()
+        except:
+            session.rollback ()
+            raise TypeError ("Failed to commit")
+        finally:
+            session.close ()
 
 @setup_parameters (records.dump.pfile)
 @setup_parameters (records.dump.qfile)
@@ -367,6 +408,22 @@ class CNVFileEntry (FileEntry, Base):
         
     def addToSimulation (self, simulationEntry):
         self.simulation = simulationEntry
+
+class Tag (Base):
+    __tablename__ = 'tags'
+    
+    id = sqlalchemy.Column (sqlalchemy.Integer, primary_key = True)
+    tag = sqlalchemy.Column (sqlalchemy.String, unique=True)
+    
+    @classmethod
+    def get (cls, session, tag):
+        try:
+            return session.query (cls).filter (cls.tag == tag).one ()
+        except sqlalchemy.orm.exc.NoResultFound:
+            tag_obj = cls (tag = tag)
+            session.add (tag_obj)
+            session.commit ()
+            return tag_obj
 
 def basicQuery (session):
     return session.query (SimulationEntry, DumpFileEntry).join (DumpFileEntry)

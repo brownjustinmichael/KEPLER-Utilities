@@ -9,13 +9,15 @@ app = Celery('kepler_jobs', backend = 'amqp', broker='amqp://guest@localhost//')
 app.config_from_object (celeryconfig)
 
 @app.task
-def run (name, original, run_location = '.', command = './kepler', force = False, **kwargs):
-    print ("RUN")
+def run (name, original, run_location = '.', command = './kepler', force = False, query = None, tags = None, **kwargs):
     generator = generate.Generator (original)
     sim = generate.Simulation (name, generator, run_location, command, force)
-    print (kwargs)
-    p = sim.run (**kwargs)
-    output = p.communicate()[0] 
-    ret = p.wait()
-    sim.rebase ()
-    return ret
+    print ("Running with arguments:", kwargs)
+    try:
+        p = sim.run (query = query, **kwargs)
+        output = p.communicate()[0]
+        ret = p.wait()
+    except TypeError:
+        pass
+    sim.rebase (tags)
+    return None
