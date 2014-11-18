@@ -153,6 +153,8 @@ class SimulationEntry (Base):
     
     tags = sqlalchemy.orm.relationship ('Tag', secondary = sim_tags, backref = 'sims')
     
+    __table_args__ = (sqlalchemy.UniqueConstraint ('path', 'name', name = '_path_name_uc'),)
+    
     def __repr__ (self):
         return "<SimulationEntry(name='%s', id=%s)>" % (self.name, str (self.id))
         
@@ -266,12 +268,16 @@ class FileEntry (object):
             
         # If we've arrived here, we'll need to add a new entry to the database.
         # Load the data from the file
-        entry, runid, name = cls.genFromFile (file)
+        try:
+            entry, runid, name = cls.genFromFile (file)
+        except Exception as e:
+            print (e)
+            raise e
         
         try:
             # print ("Checking for a corresponding simulation in the database...")
             if runid is None:
-                simulation = session.query (SimulationEntry).filter_by (name = name).one ()
+                simulation = session.query (SimulationEntry).filter_by (name = name).filter_by (path = os.path.dirname (file)).one ()
             else:
                 simulation = session.query (SimulationEntry).filter_by (runid = runid).one ()
         except sqlalchemy.orm.exc.MultipleResultsFound:
@@ -312,7 +318,7 @@ class FileEntry (object):
         
         # If any files match the glob string in the current directory, send them to update_database
         for file in glob.glob (os.path.join (directory, glob_string)):
-            cls.update_database (session, file, tags, template_name = template_name)
+            cls.update_database (session, file, tags, template_name = template_name, log_info = log_info)
             
         # If any files match the glob string in any subdirectories, send them to update_database
         for root, dirs, files in os.walk (directory):
@@ -321,7 +327,7 @@ class FileEntry (object):
                 if log_info:
                     print ("Searching in " + direct + " for " + os.path.join (direct, glob_string))
                 for file in glob.glob (os.path.join (direct, glob_string)):
-                    cls.update_database (session, file, tags, template_name = template_name)
+                    cls.update_database (session, file, tags, template_name = template_name, log_info = log_info)
         
         try:
             session.commit ()

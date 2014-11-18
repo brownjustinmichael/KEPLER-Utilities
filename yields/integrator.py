@@ -12,7 +12,7 @@ class IMFIntegrator (object):
     def __call__ (self, array, mask = None, mask_frequency = False):
         if mask is None:
             mask = np.ones (len (self.masses), dtype = bool)
-        freq = self.freq
+        freq = np.copy (self.freq)
         if mask_frequency:
             freq /= np.sum (self.freq [mask])
         return np.sum (array [mask] * freq [mask])

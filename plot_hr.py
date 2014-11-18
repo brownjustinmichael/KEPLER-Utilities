@@ -8,7 +8,7 @@ from astropy.constants import sigma_sb
 
 import records.cnv as cnv
 
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o0s1.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s20/s20o.20.cnv")
 # sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.9s1.cnv")
 # sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.8s1.cnv")
 # sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.7s1.cnv")

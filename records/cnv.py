@@ -36,7 +36,7 @@ class CNVFile:
                 self.read_int ()
                 version = self.read_int ()
             except struct.error:
-                print ("End of file.")
+                # print ("End of file.")
                 return
             
 #             print ("Found version, filling variables...")
@@ -50,7 +50,7 @@ class CNVFile:
             if (i > 1):
                 if timesec + tbase < self [-1] ['timesec']:
                     tbase = self [-1] ['timesec']
-                    print ("Time reset at %d." % i)
+                    # print ("Time reset at %d." % i)
                     # return
                 
             self.models.append ({})

@@ -194,7 +194,10 @@ class Dump (object):
         self._skip ((self.lenSmallCharArrays - 1 + (self.jmsave + 1 + 1) * min (self.numCenteredZoneArrays + self.numInterfacialZoneArrays, 33) + self.numNetworkIons * (self.jmsave - 1) + 1) * 8)
         
         # Magnetic fields should be included here
-        assert (self.parameters ['magnet'] <= 0.0)
+        if (self.parameters ['magnet'] > 0.0):
+            self._skip ((self.jmsave + 1) * 2 * 8 + 8)
+            self._skip ((self.jmsave + 1) * 2 * 8 + 8)
+            self._skip ((self.jmsave + 1) * 2 * 8 + 8)
         
         # Skip viscosity and diffusion arrays
         self._skip ((self.jmsave + 2) * 2 * 8)
@@ -314,8 +317,7 @@ class DataDump (Dump):
         # If possible, return quantity object
         try:
             return u.Quantity (self.df [index])
-        except Exception as e:
-            print (type (e))
+        except TypeError as e:
             return self.df [index]
     
     def getIsotope (self, string):
@@ -369,8 +371,20 @@ class DataDump (Dump):
         self._readDouble ()
         
         # Magnetic fields should be included here
-        assert (self.parameters ['magnet'] <= 0.0)
-        
+        if (self.parameters ['magnet'] > 0.0):
+            self.stardata ['bfvisc'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfvisc'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 1) [:-1], u.cm ** 2 / u.s)
+            self.stardata ['bfdiff'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfdiff'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 2) [:-2], u.cm ** 2 / u.s)
+            self.stardata ['bfbr'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfbr'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 1) [:-1], u.gauss)
+            self.stardata ['bfbt'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfbt'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 2) [:-2], u.gauss)
+            self.stardata ['bfviscef'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfviscef'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 1) [:-1], u.cm ** 2 / u.s)
+            self.stardata ['bfdiffef'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfdiffef'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 2) [:-2], u.cm ** 2 / u.s)
+                    
         # Read in the viscosity and diffusion arrays
         self.stardata ['angdgeff'] = numpy.zeros (self.jmsave + 1)
         self.stardata ['angdgeff'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 1) [:-1], u.cm ** 2 / u.s)

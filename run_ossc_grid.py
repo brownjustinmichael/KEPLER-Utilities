@@ -17,17 +17,15 @@ for sc in 2.0 ** sc_range:
             
 random.shuffle (sets)
  
-generator = os.path.join(os.path.dirname(os.path.realpath(__file__)), "jobs/generator/s20g")
+generator = os.path.join(os.path.dirname(os.path.realpath(__file__)), "jobs/generator/s15g")
 
 command = "/Users/justinbrown/Codes/kepler/run/kepler"
-run_location = "/Users/justinbrown/Codes/kepler/run/s20"
+run_location = "/Users/justinbrown/Codes/kepler/run/s15"
 
 for os, sc in sets:
-    name = "s20o" + ("%.1f" % os).lstrip ("0").rstrip ("0") + "%d" % math.log (sc, 2)
-    # kepler_jobs.run (name, generator, run_location, command, force = True, scpower = sc, osfactor = os, tags = ['OS/SC Grid'], query = True)
-    kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': True, 'scpower': sc, 'osfactor': os, 'tags': ['OS/SC Grid'], 'query': True}, queue = 'default')
+    name = "s15o" + ("%.1f" % os).lstrip ("0").rstrip ("0") + "%d" % math.log (sc, 2)
+    kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': False, 'scpower': sc, 'osfactor': os, 'tags': ['OS/SC Grid'], 'query': True}, queue = 'default')
 
-for sc in np.arange (-8, 1, 2):
-    name = "s20hs" + ("%d" % sc)
-    # kepler_jobs.run (name, generator, run_location, command, force = True, scpower = 0.0, scfactor = 10.0 ** sc, osherwig = 0.01, tags = ['For Kevin'], query = True)
-    kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': True, 'scpower': 0.0, 'scfactor': 10.0 ** sc, 'osherwig': 0.01, 'tags': ['For Kevin'], 'query': True}, queue = 'priority')
+# for sc in np.arange (-8, 1, 2):
+#     name = "s20hs" + ("%d" % sc)
+#     kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': False, 'scpower': 0.0, 'scfactor': 10.0 ** sc, 'osherwig': 0.01, 'tags': ['For Kevin'], 'query': True}, queue = 'priority')

@@ -253,4 +253,4 @@ def jTDPlot (cnv_record, logspace = True, points = 400):
     
     radii = u.Quantity ([model [-1] for model in cnv_record ['rncoord']])
     
-    return fig
+    return fig, ax

@@ -14,10 +14,16 @@ def run (name, original, run_location = '.', command = './kepler', force = False
     sim = generate.Simulation (name, generator, run_location, command, force)
     print ("Running with arguments:", kwargs)
     try:
+        print ("Trying to run...")
         p = sim.run (query = query, **kwargs)
+        print ("Waiting...")
         output = p.communicate()[0]
         ret = p.wait()
-    except TypeError:
+    except TypeError as e:
+        print (e)
+        pass
+    except NameError as e:
+        print (e)
         pass
     sim.rebase (tags)
     return None

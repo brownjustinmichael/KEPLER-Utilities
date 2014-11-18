@@ -18,16 +18,21 @@ def numToSize (num):
 
 session = db.Session ()
 
-query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
+query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid"))).filter (db.SimulationEntry.binm10 > 16.0)
 query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.)
-query = query.filter (db.DumpFileEntry.osfactor >= 0.09).filter (db.DumpFileEntry.osfactor <= 1.1)
-query = query.filter (db.DumpFileEntry.scpower >= 0.9).filter (db.DumpFileEntry.scpower <= 10)
+query = query.filter (db.DumpFileEntry.scpower >= 0.9).filter (db.DumpFileEntry.scpower <= 1.1)
 query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
+allquery = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid"))).filter (db.SimulationEntry.binm10 > 16.0)
+allquery = allquery.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.)
+allquery = allquery.filter (db.DumpFileEntry.osfactor > 0.0).filter (db.DumpFileEntry.scpower > 0.0)
+allquery = allquery.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
 entries = [entry for sim, entry in query.all ()]
 sims = [sim for sim, entry in query.all ()]
 cnvs = [sim.cnvfiles [0] for sim in sims]
+allentries = [entry for sim, entry in allquery.all ()]
+allsims = [sim for sim, entry in allquery.all ()]
 
 if len (entries) == 0:
     raise ValueError ("No entries in query")
@@ -36,31 +41,45 @@ hecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate
 earlyhecores = u.Quantity ([sim.get_state_dump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in sims])
 cocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in entries])
 
+allhecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in allentries])
+allearlyhecores = u.Quantity ([sim.get_state_dump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in allsims])
+allcocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in allentries])
+
+tcores = np.genfromtxt ("tcores.dat", names = True)
 lines = np.zeros (len (entries))
 
 osfactors = np.array ([entry.osfactor if (entry.brumoson > 0.0) else 1 for entry in entries])
 scpowers = np.array ([entry.scpower for entry in entries])
 
-fig, axes = plt.subplots (2, 1, sharex = True, figsize = (18, 10))
+fig, axes = plt.subplots (1, 1, sharex = True)
 
 scs = []
 
 # Plot 1
-ax = axes [0]
-ax.set_ylabel ("C/O")
-scs.append (ax.scatter (hecores.to (u.solMass), cocores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
-
-# Plot 2
-ax = axes [1]
-ax.set_ylabel ("Early He")
-scs.append (ax.scatter (hecores.to (u.solMass), earlyhecores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
+ax = axes
+ax.set_ylabel ("C/O Core Mass (solar masses)")
+scs.append (ax.scatter (allhecores.to (u.solMass), allcocores.to (u.solMass), 15.0, c = 'black', alpha = 0.5))
+scs.append (ax.scatter (hecores.to (u.solMass), cocores.to (u.solMass), 70.0, c = osfactors, picker = True, label = "Brown & Woosley (in prep)"))
+# scs.append (ax.scatter (tcores ["HeCore"], tcores ["COCore"], 70.0, marker = "s", c = tcores ["qr"], cmap = plt.get_cmap ("gray"), norm = matplotlib.colors.LogNorm (vmin = 0.001, vmax = 0.1), label = "Sukhbold & Woosley (2013)"))
 ylim = ax.get_ylim ()
 xlim = ax.get_xlim ()
-ax.plot ((0,10), (0,10), color = 'black')
+x = np.arange (5.6, 8.5, 0.1)
+y = x - 1.7
+ax.plot (x, y, "--", c = 'black')
 ax.set_ylim (ylim)
 ax.set_xlim (xlim)
 
-axes.flat [1].set_xlabel ("He Core Mass")
+# # Plot 2
+# ax = axes [1]
+# ax.set_ylabel ("Early He")
+# scs.append (ax.scatter (hecores.to (u.solMass), earlyhecores.to (u.solMass), c = scpowers, linewidths = lines, picker = True, alpha = 0.75))
+# ylim = ax.get_ylim ()
+# xlim = ax.get_xlim ()
+# ax.plot ((0,10), (0,10), color = 'black')
+# ax.set_ylim (ylim)
+# ax.set_xlim (xlim)
+
+axes.set_xlabel ("He Core Mass (solar masses)")
 
 figs = {}
 cnv_lines = {}
@@ -117,23 +136,24 @@ def onpick (event):
 
     plt.show ()
 
-fig.subplots_adjust (right = 0.8, hspace = 0)
+fig.subplots_adjust (right = 0.80, hspace = 0)
 cbar_ax = fig.add_axes ([0.85, 0.15, 0.05, 0.7])
-cb = fig.colorbar (scs [0], cax = cbar_ax)
+cb = fig.colorbar (scs [1], cax = cbar_ax)
 cb.set_label ("Overshoot Factor")
 
-ls = []
-powers = []
-labels = []
-for i in scpowers: 
-    if i not in powers:
-        powers.append (i)
-powers.sort ()
-for i in powers:
-    ls.append (plt.scatter ([], [], s = numToSize (i), linewidth = 0))
-    labels.append (str (i))
-axes [1].legend (ls, labels, scatterpoints = 1, title = "SC Power", loc = 'lower right')
+# ls = []
+# powers = []
+# labels = []
+# for i in scpowers:
+#     if i not in powers:
+#         powers.append (i)
+# powers.sort ()
+# for i in powers:
+#     ls.append (plt.scatter ([], [], s = numToSize (i), linewidth = 0))
+#     labels.append (str (i))
+# axes [1].legend (ls, labels, scatterpoints = 1, title = "SC Power", loc = 'lower right')
 # ax.set_yscale ('log')
+axes.legend (loc = 'upper left')
 fig.canvas.mpl_connect('pick_event', onpick)
 
 plt.show ()
