@@ -18,10 +18,10 @@ def numToSize (num):
 
 session = db.Session ()
 
-query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid"))).filter (db.SimulationEntry.binm10 > 16.0)
+query = db.basicQuery (session).filter (db.SimulationEntry.binm10 > 16.0)#.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
 query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.)
 query = query.filter (db.DumpFileEntry.osfactor >= 0.49).filter (db.DumpFileEntry.osfactor <= .51)
-query = query.filter (db.DumpFileEntry.scpower >= 0.01).filter (db.DumpFileEntry.scpower <= 10)
+query = query.filter (db.DumpFileEntry.scpower >= 0.9).filter (db.DumpFileEntry.scpower <= 1.1)
 query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
 allquery = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid"))).filter (db.SimulationEntry.binm10 > 16.0)
@@ -39,11 +39,11 @@ if len (entries) == 0:
     raise ValueError ("No entries in query")
     
 hecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in entries])
-earlyhecores = u.Quantity ([sim.get_state_dump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in sims])
+earlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in sims])
 cocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in entries])
 
 allhecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in allentries])
-allearlyhecores = u.Quantity ([sim.get_state_dump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in allsims])
+allearlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in allsims])
 allcocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in allentries])
 
 tcores = np.genfromtxt ("tcores.dat", names = True)

@@ -8,23 +8,23 @@ from astropy.constants import sigma_sb
 
 import records.cnv as cnv
 
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s20/s20o.20.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.9s1.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.8s1.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.7s1.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.6s1.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.5s1.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.4s1.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.3s1.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o.2s1.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o1s1.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.9.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.8.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.7.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87ha.6.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.5.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87ao.4.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87ao.3.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87ao.2.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87ao.1.cnv")
+sys.argv.append ("none")
 
 # Read in the KEPLER cnv output file into cnv_record
 if (len (sys.argv) < 2):
     print ("Usage: plot_hr cnv_file (output_file)")
     exit ()
 
-records = [cnv.CNVFile (sys.argv [1])]
+records = [cnv.CNVFile (arg) for arg in sys.argv [1:-1]]
 
 fig = plt.figure ()
 ax = plt.subplot (111)
@@ -54,8 +54,8 @@ ax.set_yscale ('log')
 ax.set_xlabel ("$T_\mathrm{eff}$ (K)")
 ax.set_ylabel ("$L$ (solar luminosities)")
 
-if (len (sys.argv) > 2):
-    plt.savefig (sys.argv [2])
-else:
+# if (len (sys.argv) > 2):
+    # plt.savefig (sys.argv [2])
+# else:
     # Plot the result
-    plt.show ()
+plt.show ()

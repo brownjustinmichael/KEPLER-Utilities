@@ -158,7 +158,7 @@ class SimulationEntry (Base):
     def __repr__ (self):
         return "<SimulationEntry(name='%s', id=%s)>" % (self.name, str (self.id))
         
-    def get_state_dump (self, state):
+    def getStateDump (self, state):
         """
         Get a dump file in the simulation with the given string state, e.g. "presn", "hdep", "2000", etc.
         """
@@ -293,7 +293,7 @@ class FileEntry (object):
             if tag not in simulation.tags:
                 simulation.tags.append (tag)
         try:
-            simulation.get_state_dump (goal_state)
+            simulation.getStateDump (goal_state)
             simulation.complete = True
         except IndexError:
             pass

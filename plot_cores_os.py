@@ -38,11 +38,11 @@ if len (entries) == 0:
     raise ValueError ("No entries in query")
     
 hecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in entries])
-earlyhecores = u.Quantity ([sim.get_state_dump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in sims])
+earlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in sims])
 cocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in entries])
 
 allhecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in allentries])
-allearlyhecores = u.Quantity ([sim.get_state_dump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in allsims])
+allearlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in allsims])
 allcocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in allentries])
 
 tcores = np.genfromtxt ("tcores.dat", names = True)

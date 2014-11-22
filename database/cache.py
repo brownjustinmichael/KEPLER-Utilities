@@ -1,5 +1,6 @@
 import numpy as np
 import abc
+import math
 
 import astropy.units as u
         
@@ -42,3 +43,51 @@ def calculate_max_sn (datadump):
 def calculate_tasbsg (cnv_record):
     radii = u.Quantity ([model [-1] for model in cnv_record ['rncoord']])
     return np.sum (cnv_record ['dt'] [np.logical_and (radii > 2e12 * u.cm, radii < 8e12 * u.cm)]).to (u.year)
+    
+def core_overshoot (datadump):
+    regions = []
+    current = None
+    previous = 0
+    for i in range (len (datadump ['icon'])):
+        if current == None:
+            current = datadump ['icon'] [i] == "osht"
+        if current != (datadump ['icon'] [i] == "osht"):
+            if current:
+                regions.append (list (range (previous, i + 1)))
+            previous = i
+            current = (datadump ['icon'] [i] == "osht")
+    
+    q = -1
+    i = 0
+    while i == 0 and q < len (regions):
+        q += 1
+        i = np.argmax (datadump ['difi'] [regions [0]] < datadump ['difi'] [regions [0] [0]] / math.e)
+    ri = regions [0] [i]
+    frac = 0.0
+    for j in range (i):
+        frac -= 0.5 * (datadump ['rn'] [ri + j + 1] - datadump ['rn'] [ri + j - 1]) / (0.5 * (datadump ['pn'] [ri + j] + datadump ['pn'] [ri + j - 1]) / (datadump ['pn'] [ri + j] - datadump ['pn'] [ri + j - 1]) * (datadump ['rn'] [ri + j] - datadump ['rn'] [ri + j - 1]))
+    return frac
+
+def env_overshoot (datadump):
+    regions = []
+    current = None
+    previous = 0
+    for i in range (len (datadump ['icon'])):
+        if current == None:
+            current = datadump ['icon'] [i] == "osht"
+        if current != (datadump ['icon'] [i] == "osht"):
+            if current:
+                regions.append (list (range (previous, i + 1)))
+            previous = i
+            current = (datadump ['icon'] [i] == "osht")
+    
+    q = 0
+    i = 0
+    while (i == 0 and -(q) < len (regions)):
+        q -= 1
+        i = np.argmin ((datadump ['difi'] [regions [q]] < datadump ['difi'] [regions [q] [-1]] / math.e))
+    ri = regions [q] [i]
+    frac = 0.0
+    for j in range (0, len (regions [q]) - i):
+        frac -= 0.5 * (datadump ['rn'] [ri + j + 1] - datadump ['rn'] [ri + j - 1]) / (0.5 * (datadump ['pn'] [ri + j] + datadump ['pn'] [ri + j - 1]) / (datadump ['pn'] [ri + j] - datadump ['pn'] [ri + j - 1]) * (datadump ['rn'] [ri + j] - datadump ['rn'] [ri + j - 1]))
+    return frac
