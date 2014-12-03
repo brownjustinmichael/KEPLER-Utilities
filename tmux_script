@@ -1,0 +1,17 @@
+tmux start-server
+
+tmux new-session -d -s KEPLER
+
+tmux new-window -tKEPLER:1 -n priority-0
+tmux new-window -tKEPLER:2 -n default-0
+tmux new-window -tKEPLER:3 -n default-1
+tmux new-window -tKEPLER:4 -n default-2
+tmux new-window -tKEPLER:5 -n default-3
+tmux new-window -tKEPLER:6 -n default-4
+
+tmux send-keys -tKEPLER:1 "celery worker -A jobs.kepler_jobs -Q priority -n priority-0" C-m
+tmux send-keys -tKEPLER:2 "celery worker -A jobs.kepler_jobs -Q priority,default -n default-0" C-m
+tmux send-keys -tKEPLER:3 "celery worker -A jobs.kepler_jobs -Q priority,default -n default-1" C-m
+tmux send-keys -tKEPLER:4 "celery worker -A jobs.kepler_jobs -Q priority,default -n default-2" C-m
+tmux send-keys -tKEPLER:5 "celery worker -A jobs.kepler_jobs -Q priority,default -n default-3" C-m
+tmux send-keys -tKEPLER:6 "celery worker -A jobs.kepler_jobs -Q priority,default -n default-4" C-m

@@ -8,15 +8,17 @@ from astropy.constants import sigma_sb
 
 import records.cnv as cnv
 
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.9.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.8.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.7.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87ha.6.cnv")
+# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87a.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h1..cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.9.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.8.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.7.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.6.cnv")
 sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.5.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87ao.4.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87ao.3.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87ao.2.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87ao.1.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.4.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.3.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.2.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.1.cnv")
 sys.argv.append ("none")
 
 # Read in the KEPLER cnv output file into cnv_record
@@ -42,10 +44,10 @@ for cnv_record in records:
         if times [i] > timezero + timediff:
             timezero = times [i]
             points.append (i)
-    ax.plot (temp, lum.to (u.solLum))
+    ax.plot (temp [points [0]:].to (u.K), lum.to (u.solLum) [points [0]:])
     colors = (-times.to (u.year) [points] + times.to (u.year) [-1]) / u.year
     colors [colors < 0.1] = 0.1
-    ax.scatter (temp [points], lum.to (u.solLum) [points], c = np.log (colors), s = 40, lw = 0.0)
+    ax.scatter (temp [points].to (u.K), lum.to (u.solLum) [points], c = np.log (colors), s = 40, lw = 0.0)
 plt.gca().invert_xaxis()
 ax.set_xlim (right = 0.)
 ax.set_ylim ((np.min (lum.to (u.solLum) [points]).value * 0.5, np.max (lum.to (u.solLum) [points]).value / 0.5))

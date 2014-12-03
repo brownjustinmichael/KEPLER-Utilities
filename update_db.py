@@ -12,6 +12,6 @@ if len (sys.argv) > 2:
 else:
     tags = []
     
-database.database.DumpFileEntry.scan_for_updates (path, '*#*', tags = tags)
+database.database.DumpFileEntry.scan_for_updates (path, '*#*', tags = tags, log_info = True)
 
 database.database.CNVFileEntry.scan_for_updates (path, '*.cnv', tags = tags)

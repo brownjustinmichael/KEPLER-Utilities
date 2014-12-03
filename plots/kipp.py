@@ -77,33 +77,42 @@ class Equal:
             
 class KippenhahnPlot(object):
     """This object takes a matplotlib axis and attaches a Kippenhahn plot to it associated with the given CNVFile"""
-    def __init__(self, axis, cnv_file):
+    def __init__(self, axis, cnv_file, useModels = False):
         super(KippenhahnPlot, self).__init__()
         self.axis = axis
         self.cnv_file = cnv_file
         
         self.times = (u.Quantity ([model ['timesec'] for model in self.cnv_file], 's').to ('year')).value
-        self.tmin = min (self.times)
-        self.tmax = max (self.times)
+        
+        if (not useModels):
+            self.x = self.times
+        else:
+            self.x = list (range (len (self.times)))
+            
+        self.xmin = min (self.x)
+        self.xmax = max (self.x)
         
         self.mmin = self.cnv_file [0] ['xmcoord'] [0] / msun
         self.mmax = self.cnv_file [0] ['xmcoord'] [-1] / msun
         
-        self.tend = self.tmax
+        self.tend = self.xmax
         i = -1
-        while (self.tend == self.tmax):
-            self.tend += self.times [-1] - self.times [-1 + i]
+        while (self.tend == self.xmax):
+            self.tend += self.x [-1] - self.x [-1 + i]
             i -= 1
             
         # Set the plot labels
-        self.axis.set_xlabel ("t (years)")
+        if (not useModels):
+            self.axis.set_xlabel ("t (years)")
+        else:
+            self.axis.set_xlabel ("Model Number")
         self.axis.set_ylabel ("m (solar masses)")
         
     def get_tmax (self):
-        return self.tmax
+        return self.xmax
         
     def plotMax (self, index, scale = 1.0, **kwargs):
-        return self.axis.plot (self.times, scale * np.array ([max (model [index]) for model in self.cnv_file]), **kwargs)
+        return self.axis.plot (self.x, scale * np.array ([max (model [index]) for model in self.cnv_file]), **kwargs)
         
     def _distance (self, value1, value2, logspace = True):
         if logspace:
@@ -124,7 +133,7 @@ class KippenhahnPlot(object):
             for i in range (len (set_conditions)):
                 get_value.append (returnValue)
                 
-        total = self._distance (self.tmin, self.tmax, logspace)
+        total = self._distance (self.xmin, self.xmax, logspace)
         
         polygons = []
         z = []
@@ -137,8 +146,8 @@ class KippenhahnPlot(object):
                 previous_i = i
                 continue
             model = self.cnv_file [i]
-            left = self.times [previous_i]
-            right = self.times [i]
+            left = self.x [previous_i]
+            right = self.x [i]
             if points is not None and (self._distance (left, right, logspace) < total / points):
                 continue
             previous_i = i

@@ -6,25 +6,25 @@ import numpy as np
 import jobs.generate as generate
 import jobs.kepler_jobs as kepler_jobs
 
-sc_range = np.arange (-3, 4)
-os_range = np.arange (0.1, 1.1, 0.1)
-
 sets = []
 
-for sc in 2.0 ** sc_range:
-    for osh in os_range:
-        sets.append ((osh, sc))
-            
+semirange = np.arange (-3,4,1)
+oshtrange = np.arange (0.1,1.1,0.1)
+
+for semi in semirange:
+    for osht in oshtrange:
+        sets.append ((osht, semi))
+
 random.shuffle (sets)
- 
-generator = os.path.join(os.path.dirname(os.path.realpath(__file__)), "jobs/generator/s15g")
+            
+generator = os.path.join(os.path.dirname(os.path.realpath(__file__)), "jobs/generator/s15hg")
 
 command = "/Users/justinbrown/Codes/kepler/run/kepler"
 run_location = "/Users/justinbrown/Codes/kepler/run/s15"
 
-for os, sc in sets:
-    name = "s15o" + ("%.1f" % os).lstrip ("0").rstrip ("0") + "%d" % math.log (sc, 2)
-    kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': False, 'scpower': sc, 'osfactor': os, 'tags': ['OS/SC Grid'], 'query': True}, queue = 'default')
+for osht, semi in sets:
+    name = "s15n" + str (osht).replace ('0', '') + str (semi)
+    kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': False, 'scpower': 2.0 ** semi, 'osfactor': osht, 'tags': ['OS/SC Grid', 'Stabilized']}, queue = 'default')
 
 # for sc in np.arange (-8, 1, 2):
 #     name = "s20hs" + ("%d" % sc)

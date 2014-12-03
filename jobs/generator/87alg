@@ -1,0 +1,262 @@
+c KEPLER generator file
+c new opacities, moderate rotation, b-torques, no ov, very low sc
+c no burn
+c note c12(ag) rate is 1.7 times the cf88 current value
+c
+c box and id information:
+box q85 woosley
+c
+c specify burn-generator-file name to turn on isotopic co-processing
+c genburn lmcbg
+c
+c input for approx network (network #1):
+net 1  h1    he3   he4   n14   c12   o16   ne20  mg24  si28  s32
+net 1  ar36  ca40  ti44  cr48  fe52  ni56  fe54  pn1   nt1
+c
+c include ise and nse networks (networks #2 and #3)
+isenet
+c
+c lmc abundances (weight %):
+m  lmc     74.60 h1     2.929e-3 he3       25.00 he4    0.0522  c12
+m  lmc    0.0122 n14      0.2500 o16      0.0561 ne20   0.0354  mg24
+m  lmc  4.300e-2 si28   1.830e-2 s32    5.290e-3 ar36
+m  lmc  3.020e-3 ca40   1.240e-4 cr48   7.610e-4 fe52
+m  lmc    0.0797 fe54
+c
+c initial grid (zone #, exterior mass(g), network #,...
+c ... temp(K), rho(g/cc), [omega(1/s)[, u(cm/s)]])
+g    0  -17.        1  lmc  6.0e+6  5.e-2     1.d-5
+g    1  -16.999     1  lmc  5.e+6   4.e-2
+g    2  -16.998     1  lmc  5.e+6   4.e-2
+g    3  -16.996     1  lmc  5.e+6   4.e-2
+g    5  -16.992     1  lmc  5.e+6   4.e-2
+g    8  -16.988     1  lmc  5.e+6   4.e-2
+g    9  -16.986     1  lmc  5.e+6   4.e-2
+g  304  -14.0       1  lmc  1.e+6   3.0e-2
+c g  395  -8.00       1  lmc  1.e+6   2.5e-2
+c g  450  -6.00       1  lmc  8.e+5   2.e-2
+c g  495  -4.50       1  lmc  3.e+5   1.8e-2
+c g  520  -2.50       1  lmc  3.e+5   1.6e-2
+g  550    -1.00       1  lmc  1.e+5   1.4e-2
+g  570  -5.e-2      1  lmc  1.e+4   1.2e-2
+g  590  -5.e-3      1  lmc  1.e+4   1.e-2
+g  610  -5.e-4      1  lmc  9.5e+3  9.5e-3
+g  630  -5.e-5      1  lmc  9.0e+3  9.0e-3
+g  650  -5.e-6      1  lmc  8.5e+3  8.5e-3
+g  670  -5.e-7      1  lmc  8.0e+3  8.0e-3
+g  690   0.0        1  lmc  5.0e+3  6.0e-3  1.0d-5
+c read in link file
+c linkfile link.kep
+c genburn lmcbg
+c
+c set outer boundary pressure
+p 69 600.
+c
+c make outermost (1.d32 g) layers hydrostatic
+p 386 1.d32
+c
+c adjust initial temperature to yield hydrostatic equilibrium
+hstat
+c
+rigidl  3.1d+52
+c
+c initial time-step
+p 1 1.
+c
+c reset default parameter values:
+c
+c time-step and back-up controls
+p 6 .05
+p 7 .035
+p 8 .1
+p 9 .05
+p 25 5.e+99
+p 46 .15
+p 47 .001
+p 55 4.
+p 205 .3
+p 206 .001
+c
+c convergence control parameters
+p 11 1.e-7
+p 12 1.e-7
+c
+c problem termination criteria
+p 158 999999
+p 306 9.e+7
+c
+c turn on sparse matrix inverter
+p 258 1
+c
+c special command execution
+p 331 1.2e+9
+p 332 .05
+c
+c execute the tnchar command to turn on dezoning after core helium
+c burning when the central temperature exceeds tempchar(p333) degK.
+c p 333 3.5e+8
+c
+c linear artificial viscosity coefficient (reset to 0.1 at zero-age ms)
+p 13 1000.
+c
+c edit and dump  controls
+p 299 1000000
+p 16 100
+p 18 10
+p 156 25
+p 197 5000
+p 268 53
+c
+c write out lising file
+p 276 99
+p 16 1
+c
+c equation of state parameters
+p 92 1.e-8
+c
+c semiconvection and overshoot mixing coefficients
+p 24 0.0001
+p 148 0.0
+c p 324 4.0
+c p 325 0.0001
+c p 326 0.0
+c
+c graphics parameters
+p 42 10150725
+p 64 5
+p 113 13800
+p 131 1.
+p 296 1
+c
+c minimum nuclear burning temperature (K)
+p 65 1.e+7
+c
+c rezoning criteria
+p 78 .2
+p 79 .08
+p 80 .2
+p 81 .08
+p 83 1.e+4
+p 84 1.e-4
+p 86 0
+p 87 1
+p 138 .33
+p 139 .5
+p 150 .004
+p 151 .009
+p 152 .015
+p 193 .2
+p 195 .0016
+p 216 3
+c
+c ise control parameters
+p 185 1.5e+9
+p 185 .04
+p 203 1.e+5
+c
+c c12(a,g) rate multipliers
+p 227 1.7
+p 228 1.7
+c
+c post-processor-dump control parameters
+p 44 6000000
+p 303 0.5
+c
+c set the time at which to make zero-age-main-sequence parameter changes
+p 308 1.e+12
+c
+c turn on rezoner at the zero-age main sequence by reseting p 86
+c to the value of p 309
+p 309 1
+c
+c turn down the linear artificial viscosity at the zero-age main
+c sequence by reseting p 13 to the value of p 310
+p 310 .1
+c
+c set the core temperature at which to make pre-carbon-burning
+c parameter changes
+p 311 5.e+8
+c
+c raise floor on abundances considered in calculating the time-step
+c just before carbon ignition by reseting p47 to the value of p312
+p 312 .003
+c
+c finely zone the central 2-4 solar masses just before carbon ignition
+c by reseting p195 to the value of p313 and p150 to the value of p314
+p 313 .0016
+p 314 .004
+c
+c
+c
+alias  tnchar  "p 87 1"
+alias  cdep    "p 206 .003,   p 331 1.e+99"
+alias  odep1   "p 6 .02,      p 7 .02,       p 8 .02,        p 11 1.e-7"
+alias  odep2   "p 12 1.e-7,   p 54 10.,      p 55 10.,       p 70 1.e+0"
+alias  odep3   "p 73 1.e+99,  p 206 3.e-3,   p 332 -1.e+99,  zerotime"
+alias  odep    "odep1,        odep2,         odep3"
+alias  plota   "mlim,         p 114 10,   pl 1,pl 2,pl 3,pl 4,pl 5,pl 7"
+alias set6 "setiso h1 he4 c12 c13 n14 o16 o17 o18 ne20 ne22 na22 na23"
+alias add6 "addiso mg24 mg25 mg26 al26 al27 si28 s32 ar36 ca40 fe58"
+alias  plotb   "p 316 1.e-9,set6,pl 6"
+alias  plotc   "mlim 0. 3.,    pl 1,pl 2,pl 3,pl 4,pl 5,pl 7,mlim"
+alias  presn   "plota, plotc, plotb"
+alias  yeplot  "mlim 0. 3.,  ylim .4 .5,    mon ionye, mlim"
+alias  teffplot "tlim -15. -11.,ylim 1.e+3 1.e+5, tp teff"
+alias  teffplta "tlim -15. 0.,ylim 1.e+3 1.e+5, tp teff"
+alias  dntnplot "mlim, tlim,   ylim,          tp dn1 tn1"
+alias  plotm    "yeplot, teffplot, dntnplot"
+alias  t1       "tq,1,1 i"
+alias  tmc      "mlim, p 301 0, tm convect"
+c
+c
+c Nieuwenhuijzen et al (1990) mass loss rate
+p 363 1.0d0
+c
+c leave on rotational mixing processes (nangmix)
+p 364 1
+p 365 5.00D-2
+p 366 3.33D-2
+p 367 1.0
+p 368 2.5D+3
+p 369 0.25
+p 370 1.0
+p 371 1.0
+p 372 0.9
+p 373 0.9
+p 374 0.9
+c smoothing of gradients and time derivative
+p 380 0.2
+p 381 2
+p 382 1.0D-3
+p 383 1.0D-3
+c
+c also use moderate time-step during MS evolution
+p 25 2.d11
+c
+p 82 1.D-99
+c
+c stop at central temperature of
+p 304 5.0D99
+c
+c choose A4 paper
+c p 384 0
+c
+c make convection plot
+p 376 1
+datapath /u/woosley/kepler/source/data
+p 18 100
+p 156 20
+p 299 100000
+p 64 25
+p 377 1
+p 52 10
+p 375 0.2
+p 88 1.e12
+c turn on adaptive network
+p 137 1
+c turn on ye-burn coupling
+p 357 1
+c minimum mass zone
+p 336 2.e30
+c turn on b-torques
+p 423 2

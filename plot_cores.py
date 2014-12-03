@@ -18,16 +18,33 @@ def numToSize (num):
 
 session = db.Session ()
 
-query = db.basicQuery (session)#.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
-query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.)
-query = query.filter (db.DumpFileEntry.osfactor >= 0.49).filter (db.DumpFileEntry.osfactor <= 0.51)
-query = query.filter (db.DumpFileEntry.scpower >= 0.9).filter (db.DumpFileEntry.scpower <= 1.1)
+query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "Perturbed sample")))
+# query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.)
+# query = query.filter (db.DumpFileEntry.osfactor >= 0.49).filter (db.DumpFileEntry.osfactor <= 0.51)
+# query = query.filter (db.DumpFileEntry.scpower >= 0.9).filter (db.DumpFileEntry.scpower <= 1.1)
 query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
-
 
 entries = [entry for sim, entry in query.all ()]
 sims = [sim for sim, entry in query.all ()]
 cnvs = [sim.cnvfiles [0] for sim in sims]
+
+# query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
+# query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 < 16.0)
+# query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
+#
+# entries += [entry for sim, entry in query.all ()]
+# sims += [sim for sim, entry in query.all ()]
+# cnvs += [sim.cnvfiles [0] for sim in sims]
+
+query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "Resolution")))
+# query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 < 16.0)
+# query = query.filter (db.DumpFileEntry.osfactor >= 0.49).filter (db.DumpFileEntry.osfactor <= 0.51)
+# query = query.filter (db.DumpFileEntry.scpower >= 0.9).filter (db.DumpFileEntry.scpower <= 1.1)
+query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
+
+entries += [entry for sim, entry in query.all ()]
+sims += [sim for sim, entry in query.all ()]
+cnvs += [sim.cnvfiles [0] for sim in sims]
 
 if len (entries) == 0:
     raise ValueError ("No entries in query")
@@ -37,6 +54,7 @@ earlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core',
 cocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in entries])
 
 lines = np.zeros (len (entries))
+lines [-1] = 1.0
 
 osfactors = np.array ([entry.osfactor if (entry.brumoson > 0.0) else 1 for entry in entries])
 scpowers = np.array ([entry.scpower for entry in entries])
@@ -48,12 +66,12 @@ scs = []
 # Plot 1
 ax = axes [0]
 ax.set_ylabel ("C/O")
-scs.append (ax.scatter (hecores.to (u.solMass), cocores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (hecores.to (u.solMass), cocores.to (u.solMass), 100.0, c = osfactors, linewidths = lines, picker = True, alpha = 0.15))
 
 # Plot 2
 ax = axes [1]
 ax.set_ylabel ("Early He")
-scs.append (ax.scatter (hecores.to (u.solMass), earlyhecores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (hecores.to (u.solMass), earlyhecores.to (u.solMass), 100.0, c = osfactors, linewidths = lines, picker = True, alpha = 0.15))
 ylim = ax.get_ylim ()
 xlim = ax.get_xlim ()
 ax.plot ((0,10), (0,10), color = 'black')
@@ -132,7 +150,7 @@ powers.sort ()
 for i in powers:
     ls.append (plt.scatter ([], [], s = numToSize (i), linewidth = 0))
     labels.append (str (i))
-axes [1].legend (ls, labels, scatterpoints = 1, title = "SC Power", loc = 'lower right')
+# axes [1].legend (ls, labels, scatterpoints = 1, title = "SC Power", loc = 'lower right')
 # ax.set_yscale ('log')
 fig.canvas.mpl_connect('pick_event', onpick)
 
