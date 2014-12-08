@@ -7,6 +7,7 @@ import numpy
 import struct
 import pandas
 import astropy.units as u
+import periodictable
 
 __location__ = os.path.realpath (os.path.join (os.getcwd (), os.path.dirname (__file__)))
 
@@ -17,17 +18,56 @@ class Isotope(object):
     """
     A python representation of an isotope
     """
-    def __init__(self, string, a, z, **kwargs):
+    def __init__(self, string, a = None, z = None, **kwargs):
         super (Isotope, self).__init__()
         self.string = string
+        j = 0
+        for i in self.string:
+            if i.isdigit ():
+                break
+            j += 1
+        newstring = self.string [j:] + '-' + self.string [:j].title ()
+            
         self.a = a
+        if self.a is None:
+            self.a = int (self.string [j:])
+            
         self.z = z
+        if self.z is None:
+            self.z = 0
+            if self.string == "nt1":
+                self.z = 0
+            elif self.string == "ye":
+                self.z = 0
+            else:
+                self.z = getattr (periodictable, self.string [:j].title ()).number
+            
         self.data = {}
         self.label = self.makeLabel (self.string, self.a)
         for key in kwargs:
             self.data [key] = kwargs [key]
             
+    def __lt__ (self, other):
+        if self.z < other.z:
+            return True
+        if self.z == other.z and self.a < other.a:
+            return True
+        return False
+        
+    def __gt__ (self, other):
+        if self.z > other.z:
+            return True
+        if self.z == other.z and self.a > other.a:
+            return True
+        return False
+        
+    def __eq__ (self, other):
+        return self.z == other.z and self.a == other.a
+            
     def __str__ (self):
+        return self.string
+        
+    def __repr__ (self):
         return self.string
         
     def getLabel (self):
@@ -35,6 +75,20 @@ class Isotope(object):
         Return a LaTeX version of the string representation of the isotope
         """
         return self.label
+        
+    def getElementLabel (self):
+        label = ''.join([i for i in self.string if not i.isdigit()])
+        if self.string == 'nt1':
+            label = '$n$'
+        elif self.string == 'pn1':
+            label = '$p$'
+        elif self.string == 'ye':
+            label = '$Y_{e}$'
+        elif self.string == "'fe'":
+            label = "$\\mathrm{\\lq{Fe}\\rq}$"
+        else:
+            label = '$\mathrm{' + label.capitalize () + '}$'
+        return label
         
     @staticmethod
     def makeLabel (string, a):

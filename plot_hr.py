@@ -9,16 +9,11 @@ from astropy.constants import sigma_sb
 import records.cnv as cnv
 
 # sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87a.cnv")
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h1..cnv")
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.9.cnv")
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.8.cnv")
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.7.cnv")
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.6.cnv")
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.5.cnv")
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.4.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87s2.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87s1.cnv")
 sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.3.cnv")
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.2.cnv")
-sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.1.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87s-1.cnv")
+sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87s-2.cnv")
 sys.argv.append ("none")
 
 # Read in the KEPLER cnv output file into cnv_record

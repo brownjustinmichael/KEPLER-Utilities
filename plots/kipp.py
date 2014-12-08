@@ -133,7 +133,7 @@ class KippenhahnPlot(object):
             for i in range (len (set_conditions)):
                 get_value.append (returnValue)
                 
-        total = self._distance (self.xmin, self.xmax, logspace)
+        total = self._distance (self.x [list (extent) [0]], self.x [list (extent) [-1]], logspace)
         
         polygons = []
         z = []
@@ -188,7 +188,7 @@ class KippenhahnPlot(object):
                 collections [-1].set_label (label [i % len (label)])
         return collections
         
-    def plotEnergy (self, points = 400, logspace = True, **kwargs):
+    def plotEnergy (self, points = 400, logspace = True, extent = None, **kwargs):
         # Calculate the maximum log10 value of energy gain/loss throughout the star to evenly balance the SymLog colorbar 
         vmax = max ([max (model ['nuc']) if len (model ['nuc']) != 0 else 0 for model in self.cnv_file])
 
@@ -198,7 +198,7 @@ class KippenhahnPlot(object):
         edgecolor = kwargs.pop ('edgecolor', 'white')
 
         # Generate the energy plot from indices 'inuc' and values 'nuc'
-        return self.plotRectangles ('inuc', 'nuc', False, get_value = (energyBin,), cmap = cmap, linewidth = linewidth, norm = norm, edgecolor = edgecolor, logspace = logspace, points = points)
+        return self.plotRectangles ('inuc', 'nuc', False, get_value = (energyBin,), cmap = cmap, linewidth = linewidth, norm = norm, edgecolor = edgecolor, logspace = logspace, points = points, extent = extent)
         
     def addEnergyColorBar (self, energy):
         vmax = max ([max (model ['nuc']) if len (model ['nuc']) != 0 else 0 for model in self.cnv_file])
@@ -217,7 +217,7 @@ class KippenhahnPlot(object):
         cb.set_label ("energy generation loss/gain (erg/g/s)")
         return cb
         
-    def plotConvection (self, points = 400, logspace = True, **kwargs):
+    def plotConvection (self, points = 400, logspace = True, extent = None, **kwargs):
         # Generate the mixing plot
         conditions = (lambda x: x == 'C', lambda x: x == 'O', lambda x: x == 'S', lambda x: x == 'T')
         returns = ((lambda x, model: 0),) * 4
@@ -229,9 +229,9 @@ class KippenhahnPlot(object):
         color = kwargs.pop ('color', ('black', 'gray', 'r', 'b'))
         label = kwargs.pop ('label', ("Convective", "Overshooting", "Semi-Convective", "Thermohaline"))
         
-        return self.plotRectangles ('iconv', 'yzip', True, set_conditions = conditions, get_value = returns, edgecolor = edgecolor, cmap = cmap, linewidth = linewidth, logspace = logspace, points = points, hatch = hatch, color = color, label = label)
+        return self.plotRectangles ('iconv', 'yzip', True, set_conditions = conditions, get_value = returns, edgecolor = edgecolor, cmap = cmap, linewidth = linewidth, logspace = logspace, points = points, hatch = hatch, color = color, label = label, extent = extent)
         
-def jTDPlot (cnv_record, logspace = True, points = 400):
+def jTDPlot (cnv_record, logspace = True, extent = None, points = 400):
     if not isinstance (cnv_record, records.cnv.CNVFile):
         cnv_record = records.cnv.CNVFile (cnv_record)
 
@@ -242,10 +242,10 @@ def jTDPlot (cnv_record, logspace = True, points = 400):
     # Initialize the KippenhahnPlot object with the given axis and record file
     kippplot = KippenhahnPlot (ax, cnv_record)
 
-    energy, = kippplot.plotEnergy (points = points, logspace = logspace)
+    energy, = kippplot.plotEnergy (points = points, logspace = logspace, extent = extent)
     cb = kippplot.addEnergyColorBar (energy)
 
-    kippplot.plotConvection (points = points, logspace = logspace)
+    kippplot.plotConvection (points = points, logspace = logspace, extent = extent)
 
     # Generate the outer edge of the star
     mass, = kippplot.plotMax ('xmcoord', 1.0 / msun, color = 'black', label = "Total Mass")
@@ -255,7 +255,10 @@ def jTDPlot (cnv_record, logspace = True, points = 400):
         ax.set_xscale ('shiftlog', base = 10, zero = kippplot.tend, sign = -1.0)
 
     # Set the plot limits and show the grid and legend
-    ax.set_xlim (kippplot.tmin, kippplot.tmax - 10.**-5)
+    if extent == None:
+        ax.set_xlim (kippplot.xmin, kippplot.xmax - 10.**-5)
+    else:
+        ax.set_xlim (kippplot.x [list (extent) [0]], kippplot.x [list (extent) [-1]])
     ax.set_ylim (kippplot.mmin, kippplot.mmax)
     plt.grid ()
     plt.legend ()
