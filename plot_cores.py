@@ -32,8 +32,9 @@ if len (entries) == 0:
 hecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in entries])
 earlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in sims])
 cocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in entries])
-sicores = u.Quantity ([entry.cache (session, 'si_core', database.cache.calculate_si_core) for entry in entries])
-fecores = u.Quantity ([entry.cache (session, 'fe_core', database.cache.calculate_fe_core) for entry in entries])
+# sicores = u.Quantity ([entry.cache (session, 'si_core', database.cache.calculate_si_core) for entry in entries])
+# fecores = u.Quantity ([entry.cache (session, 'fe_core', database.cache.calculate_fe_core) for entry in entries])
+radii = u.Quantity ([entry.radius * u.cm for entry in entries])
 tasbsg = u.Quantity ([cnv.cache (session, 'tasbsg', database.cache.calculate_tasbsg) for cnv in cnvs])
 
 lines = np.zeros (len (entries))
@@ -52,12 +53,12 @@ scs = []
 # Plot 1
 ax = axes [0] [0]
 ax.set_ylabel ("C/O")
-scs.append (ax.scatter (hecores.to (u.solMass), cocores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (numToSize (scpowers), cocores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
 
 # Plot 2
 ax = axes [0] [1]
 ax.set_ylabel ("Early He")
-scs.append (ax.scatter (hecores.to (u.solMass), earlyhecores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (numToSize (scpowers), earlyhecores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
 ylim = ax.get_ylim ()
 xlim = ax.get_xlim ()
 ax.plot ((0,10), (0,10), color = 'black')
@@ -67,12 +68,12 @@ ax.set_xlim (xlim)
 # Plot 3
 ax = axes [1] [0]
 ax.set_ylabel ("Si")
-scs.append (ax.scatter (hecores.to (u.solMass), sicores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (numToSize (scpowers), radii.to (u.solRad), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
 
 # Plot 4
 ax = axes [1] [1]
 ax.set_ylabel ("Time as BSG")
-scs.append (ax.scatter (hecores.to (u.solMass), tasbsg.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (numToSize (scpowers), tasbsg.to (u.yr), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
 
 # axes.flat [1].set_xlabel ("He Core Mass")
 

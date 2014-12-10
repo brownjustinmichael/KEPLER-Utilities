@@ -11,10 +11,15 @@ class Abundances (object):
         self.quantity = {}
         for isotope in abundanceDict:
             if isinstance (isotope, Isotope):
-                isotope = isotope.string
-            self.quantity [isotope] = abundanceDict [isotope]
+                iso = isotope.string
+            else:
+                iso = isotope
+            self.quantity [iso] = abundanceDict [isotope]
             if self.total is None:
-                self.total = abundanceDict [isotope]
+                try:
+                    self.total = abundanceDict [isotope].copy ()
+                except AttributeError:
+                    self.total = abundanceDict [isotope]
             else:
                 self.total += abundanceDict [isotope]
         if normalization is not None:
