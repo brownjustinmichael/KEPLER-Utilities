@@ -61,4 +61,4 @@ def jTDPlot (record, ymin = 10.**-2.5, **kwargs):
 
     ax.legend (bbox_to_anchor=(1.05, 1.2), loc=2, borderaxespad=1)
     
-    return fig
+    return fig, ax

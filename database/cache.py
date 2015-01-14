@@ -3,7 +3,16 @@ import abc
 import math
 
 import astropy.units as u
+
+def calculate_compactness_2_5 (datadump):
+    return 2.5 / (datadump ['rn'] [np.argmax (datadump ['mass coordinate'] > 2.5 * u.solMass)] / (1000 * u.km)).to (1)
+    
+def calculate_co_ratio_in_core (datadump):
+    return np.sum ((datadump ['xm'] * datadump ['c12']) [0:np.argmax (datadump ['he4'] > 0.2)]) / np.sum ((datadump ['xm'] * datadump ['o16']) [0:np.argmax (datadump ['he4'] > 0.2)])
         
+def sum_iso (isotope, datadump):
+    return np.sum (datadump ['xm'] * datadump [isotope])
+    
 def calculate_he_core (datadump):
     return datadump ['mass coordinate'] [np.argmax (datadump ['h1'] > 0.1)]
     

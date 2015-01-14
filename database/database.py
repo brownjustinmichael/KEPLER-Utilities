@@ -108,9 +108,12 @@ class Cache (object):
         entrycls.Cache = cls.CacheFactory (entrycls.__name__ + "Cache", entrycls, entrycls.__name__.lower ().replace ("entry", "") + "cache", backref = sqlalchemy.orm.backref ('cached'))
     
         # Define the caching method for cls, which will check whether the value has been cached previously
-        def cache (self, session, cache_name, function, cache_data = True):
+        def cache (self, session, cache_name, function, **kwargs):
             # Create a string version of the function for code comparison
-            code = ''.join (inspect.getsourcelines (function) [0])
+            try:
+                code = ''.join (inspect.getsourcelines (function) [0])
+            except TypeError:
+                code = 'unable to read'
     
             # Check if the cached function already exists in the current cache
             for cache in self.cached:
@@ -123,7 +126,7 @@ class Cache (object):
                     session.commit ()
             
             # Evaluate the cached function
-            result = u.Quantity (function (self.get_data (cache_data)))
+            result = u.Quantity (function (self.get_data (**kwargs)))
             self.cached.append (self.Cache (name = cache_name, value = result.value, unit = str (result.unit), code = code))
     
             # Commit the result and return it
@@ -183,6 +186,12 @@ class SimulationEntry (Base):
         for param in self.parameters:
             if getattr (self, param) != getattr (entry, param):
                 setattr (self, param, None)
+                
+    def tag (self, session, tagName):
+        tag = Tag.get (session, tagName)
+        if tag not in self.tags:
+            self.tags.append (tag)
+        session.commit ()
 
 # @sqlalchemy.event.listens_for(Session, 'after_flush')
 # def delete_sim_orphans(session, ctx):
@@ -378,8 +387,8 @@ class DumpFileEntry (FileEntry, Base):
             except KeyError as e:
                 pass
         
-    def get_data (self, cache = True):
-        dataobject = records.dump.DataDump (self.file)
+    def get_data (self, cache = True, **kwargs):
+        dataobject = records.dump.DataDump (self.file, **kwargs)
         if not cache:
             return dataobject
         if self.dataobject is None:
