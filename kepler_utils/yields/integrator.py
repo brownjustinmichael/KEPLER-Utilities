@@ -1,6 +1,6 @@
 import numpy as np
 import astropy.units as u
-import yields.abundances as ab
+from .abundances as import Abundances
 
 class IMFIntegrator (object):
     def __init__ (self, initial_masses, alpha = -2.35, numberArray = None, normalize = 1.0):
@@ -55,4 +55,4 @@ class IMFIntegrator (object):
             value = self (yieldReader.get_yield (isotope), mask = mask)
             yd [isotope.string] = value
            
-        return ab.Abundances (yd)
+        return Abundances (yd)

@@ -2,9 +2,8 @@ import os
 import collections
 import astropy.units as u
 import numpy as np
-from records.dump import Isotope
+from kepler_utils.records.dump import Isotope
 from pandas import DataFrame
-
 
 class YieldReader (object):
     def __init__ (self, directory = "yields/wh07/", extension = ".yield", masses = None, windType = False):

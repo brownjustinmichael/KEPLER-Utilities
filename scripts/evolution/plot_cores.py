@@ -7,19 +7,18 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 import sqlalchemy
 
-import records.cnv
-import records.dump
-import database.database as db
-import database.cache
-import plots.kipp
-import plots.abundances
+import kepler_utils.records.dump
+import kepler_utils.database.database as db
+import kepler_utils.database.cache as cache
+import kepler_utils.plots.kipp
+import kepler_utils.plots.abundances
 
 def numToSize (num):
     return 70 * (-np.log2 (num) + 4)
 
 session = db.Session ()
 
-query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid"))).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "Stabilized"))).filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Failed"))).filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "MS Jump")))
+query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
 query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 > 21.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
 query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
@@ -30,15 +29,15 @@ cnvs = [sim.cnvfiles [0] for sim in sims]
 if len (entries) == 0:
     raise ValueError ("No entries in query")
 
-hecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in entries])
-# earlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in sims])
-cocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in entries])
-coratio = u.Quantity ([entry.cache (session, 'co_ratio', database.cache.calculate_co_ratio_in_core) for entry in entries])
-compactness = u.Quantity ([entry.cache (session, 'compactness', database.cache.calculate_compactness_2_5) for entry in entries])
-# # sicores = u.Quantity ([entry.cache (session, 'si_core', database.cache.calculate_si_core) for entry in entries])
-fecores = u.Quantity ([entry.cache (session, 'fe_core', database.cache.calculate_fe_core) for entry in entries])
+hecores = u.Quantity ([entry.cache (session, 'he_core', cache.calculate_he_core) for entry in entries])
+# earlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core', cache.calculate_he_core) for sim in sims])
+cocores = u.Quantity ([entry.cache (session, 'co_core', cache.calculate_co_core) for entry in entries])
+coratio = u.Quantity ([entry.cache (session, 'co_ratio', cache.calculate_co_ratio_in_core) for entry in entries])
+compactness = u.Quantity ([entry.cache (session, 'compactness', cache.calculate_compactness_2_5) for entry in entries])
+# # sicores = u.Quantity ([entry.cache (session, 'si_core', cache.calculate_si_core) for entry in entries])
+fecores = u.Quantity ([entry.cache (session, 'fe_core', cache.calculate_fe_core) for entry in entries])
 # radii = u.Quantity ([sim.getStateDump ("hburn").radius * u.cm for sim in sims])
-# tasbsg = u.Quantity ([cnv.cache (session, 'tasbsg', database.cache.calculate_tasbsg) for cnv in cnvs])
+# tasbsg = u.Quantity ([cnv.cache (session, 'tasbsg', cache.calculate_tasbsg) for cnv in cnvs])
 # tms = u.Quantity ([sim.getStateDump ("heign").time * u.s for sim in sims])
 
 lines = np.zeros (len (entries))

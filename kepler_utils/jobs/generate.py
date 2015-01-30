@@ -5,7 +5,7 @@ import hashlib
 import time
 import datetime
 
-import database.database as db
+from kepler_utils.database.database import SimulationEntry, DumpFileEntry, CNVFileEntry
 
 class Generator (object):
     """docstring for Generator """
@@ -36,25 +36,25 @@ class Generator (object):
             parameters ['osfactor'] = 0.0
         
         if query:
-            session = db.Session ()
-            query = session.query (db.SimulationEntry).filter (db.SimulationEntry.template_name == self.original).filter (db.SimulationEntry.template_hash == hashlib.md5 (open (self.original).read ().encode ()).hexdigest ()).filter (db.SimulationEntry.complete == True)
+            session = Session ()
+            query = session.query (SimulationEntry).filter (SimulationEntry.template_name == self.original).filter (SimulationEntry.template_hash == hashlib.md5 (open (self.original).read ().encode ()).hexdigest ()).filter (SimulationEntry.complete == True)
             for param in parameters:
                 if type (parameters [param]) == float:
-                    query = query.filter (getattr (db.SimulationEntry, param) > parameters [param] * 0.99)
-                    query = query.filter (getattr (db.SimulationEntry, param) < parameters [param] * 1.01)
+                    query = query.filter (getattr (SimulationEntry, param) > parameters [param] * 0.99)
+                    query = query.filter (getattr (SimulationEntry, param) < parameters [param] * 1.01)
                 else:
-                    query = query.filter (getattr (db.SimulationEntry, param) == parameters [param])
+                    query = query.filter (getattr (SimulationEntry, param) == parameters [param])
             if query.count () != 0:
                 print ("Simulation already exists")
                 raise TypeError ("Simulation already exists")
                 
-            query = session.query (db.SimulationEntry).filter (db.SimulationEntry.template_name == self.original).filter (db.SimulationEntry.template_hash == hashlib.md5 (open (self.original).read ().encode ()).hexdigest ()).filter (db.SimulationEntry.complete == False)
+            query = session.query (SimulationEntry).filter (SimulationEntry.template_name == self.original).filter (SimulationEntry.template_hash == hashlib.md5 (open (self.original).read ().encode ()).hexdigest ()).filter (SimulationEntry.complete == False)
             for param in parameters:
                 if type (parameters [param]) == float:
-                    query = query.filter (getattr (db.SimulationEntry, param) > parameters [param] * 0.99)
-                    query = query.filter (getattr (db.SimulationEntry, param) < parameters [param] * 1.01)
+                    query = query.filter (getattr (SimulationEntry, param) > parameters [param] * 0.99)
+                    query = query.filter (getattr (SimulationEntry, param) < parameters [param] * 1.01)
                 else:
-                    query = query.filter (getattr (db.SimulationEntry, param) == parameters [param])
+                    query = query.filter (getattr (SimulationEntry, param) == parameters [param])
             for sim in query.all ():
                 for entry in sim.dumpfiles:
                     session.delete (entry)
@@ -105,8 +105,8 @@ class Simulation (object):
     def rebase (self, tags = None):
         while True:
             try:
-                db.DumpFileEntry.scan_for_updates (self.run_location, self.name + "#*", tags, template_name = self.generator.original, log_info = True)
-                db.CNVFileEntry.scan_for_updates (self.run_location, self.name + ".cnv", tags, template_name = self.generator.original)
+                DumpFileEntry.scan_for_updates (self.run_location, self.name + "#*", tags, template_name = self.generator.original, log_info = True)
+                CNVFileEntry.scan_for_updates (self.run_location, self.name + ".cnv", tags, template_name = self.generator.original)
                 return
             except Exception as e:
                 # print ("There was an issue. Retrying in 5 seconds...")

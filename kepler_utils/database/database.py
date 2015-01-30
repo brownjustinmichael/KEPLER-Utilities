@@ -9,8 +9,8 @@ import astropy.units as u
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
-import records.dump
-import records.cnv
+from kepler_utils.records.dump import pfile, qfile, Dump, DataDump
+from kepler_utils.records.cnv import CNVFile
 
 # Setup the declarative base class for inheritance
 Base = declarative_base ()
@@ -138,7 +138,7 @@ class Cache (object):
         
 sim_tags = sqlalchemy.Table ('sim_tags', Base.metadata, sqlalchemy.Column ('sim_id', sqlalchemy.Integer, sqlalchemy.ForeignKey ('simulations.id')), sqlalchemy.Column ('tag_id', sqlalchemy.Integer, sqlalchemy.ForeignKey ('tags.id')))
 
-@setup_parameters (records.dump.pfile)
+@setup_parameters (pfile)
 class SimulationEntry (Base):
     """
     A database entry for simulations, which will each hold a number of file entry objects
@@ -346,8 +346,8 @@ class FileEntry (object):
         finally:
             session.close ()
 
-@setup_parameters (records.dump.pfile)
-@setup_parameters (records.dump.qfile)
+@setup_parameters (pfile)
+@setup_parameters (qfile)
 @Cache.caching
 class DumpFileEntry (FileEntry, Base):
     __tablename__ = 'dumpfiles'
@@ -370,10 +370,10 @@ class DumpFileEntry (FileEntry, Base):
         
     @classmethod
     def genFromFile (cls, file):
-        d = records.dump.Dump (file)
+        d = Dump (file)
         entry = DumpFileEntry (file = file, date = datetime.datetime.fromtimestamp (os.path.getmtime(file)), timestep = d.ncyc, state = d.getState ())
-        entry.set_parameters (d, records.dump.pfile)
-        entry.set_parameters (d, records.dump.qfile)
+        entry.set_parameters (d, pfile)
+        entry.set_parameters (d, qfile)
         return entry, d.getRunId (), d.namep
         
     def set_parameters (self, dump, file):
@@ -388,7 +388,7 @@ class DumpFileEntry (FileEntry, Base):
                 pass
         
     def get_data (self, cache = True, **kwargs):
-        dataobject = records.dump.DataDump (self.file, **kwargs)
+        dataobject = DataDump (self.file, **kwargs)
         if not cache:
             return dataobject
         if self.dataobject is None:
@@ -414,7 +414,7 @@ class CNVFileEntry (FileEntry, Base):
         return entry, None, name
         
     def get_data (self, cache = True):
-        dataobject = records.cnv.CNVFile (self.file)
+        dataobject = CNVFile (self.file)
         if not cache:
             return dataobject
         if self.dataobject == None:

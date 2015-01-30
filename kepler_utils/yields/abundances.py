@@ -1,7 +1,7 @@
 import os
 
 import periodictable
-from records.dump import Isotope
+from kepler_utils.records.dump import Isotope
 
 __location__ = os.path.realpath (os.path.join (os.getcwd (), os.path.dirname (__file__)))
 

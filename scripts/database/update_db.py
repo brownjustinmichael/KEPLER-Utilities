@@ -1,6 +1,6 @@
 import sys
 
-import database.database
+from kepler_utils.database.database import DumpFileEntry, CNVFileEntry
 
 if len (sys.argv) > 1:
     path = sys.argv [1]
@@ -12,6 +12,6 @@ if len (sys.argv) > 2:
 else:
     tags = []
     
-database.database.DumpFileEntry.scan_for_updates (path, '*#*', tags = tags)
+DumpFileEntry.scan_for_updates (path, '*#*', tags = tags)
 
-database.database.CNVFileEntry.scan_for_updates (path, '*.cnv', tags = tags)
+CNVFileEntry.scan_for_updates (path, '*.cnv', tags = tags)

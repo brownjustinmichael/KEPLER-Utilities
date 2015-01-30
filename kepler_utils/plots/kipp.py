@@ -9,8 +9,8 @@ import matplotlib.colors
 import matplotlib.scale
 import matplotlib.transforms
 
-import records.cnv
-import plots.shiftlog
+from kepler_utils.records.cnv import CNVFile
+import kepler_utils.plots.shiftlog
 
 msun = 1.988435e33
 
@@ -232,8 +232,8 @@ class KippenhahnPlot(object):
         return self.plotRectangles ('iconv', 'yzip', True, set_conditions = conditions, get_value = returns, edgecolor = edgecolor, cmap = cmap, linewidth = linewidth, logspace = logspace, points = points, hatch = hatch, color = color, label = label, extent = extent)
         
 def jTDPlot (cnv_record, logspace = True, extent = None, points = 400):
-    if not isinstance (cnv_record, records.cnv.CNVFile):
-        cnv_record = records.cnv.CNVFile (cnv_record)
+    if not isinstance (cnv_record, CNVFile):
+        cnv_record = CNVFile (cnv_record)
 
     # Generate a matplotlib figure with one subplot
     fig = plt.figure (figsize = (18,10))
