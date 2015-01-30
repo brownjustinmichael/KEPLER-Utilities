@@ -8,7 +8,7 @@ class IMFIntegrator (object):
         if numberArray is None:
             # If we're here, a numberArray was not specified. Use a Salpeter IMF and check that the mass range is monotonic TODO allow for nonmonotonic mass arrays
             for i in range (1, len (initial_masses)):
-                assert (initial_masses [i - 1] < initial_masses [i])
+                assert (initial_masses [i - 1] <= initial_masses [i])
             mdiff = np.zeros (len (self.masses))
             mdiff [:-1] = np.diff (initial_masses)
             self.freq = (self.masses**alpha * mdiff).value

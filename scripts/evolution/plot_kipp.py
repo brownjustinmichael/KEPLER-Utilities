@@ -9,14 +9,15 @@ import matplotlib.colors
 import matplotlib.patches
 import matplotlib.pyplot as plt
 
-import records.cnv
-import plots.kipp
-import plots.shiftlog
-
-
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o0s3.cnv")
+import kepler_utils.records.cnv
+import kepler_utils.plots.kipp
+import kepler_utils.plots.shiftlog
 
 # matplotlib.rc ('text', usetex = True)
+
+useModels = False
+logSpace = False
+points = 400
 
 # Read in the KEPLER cnv output file into cnv_record
 if (len (sys.argv) < 2):
@@ -30,12 +31,12 @@ fig = plt.figure (figsize = (18,10))
 ax = plt.subplot (111)
 
 # Initialize the KippenhahnPlot object with the given axis and record file
-kippplot = plots.kipp.KippenhahnPlot (ax, cnv_record, useModels = True)
+kippplot = plots.kipp.KippenhahnPlot (ax, cnv_record, useModels = useModels)
 
-energy, = kippplot.plotEnergy (logspace = False, points = None)
+energy, = kippplot.plotEnergy (logspace = logSpace, points = points)
 cb = kippplot.addEnergyColorBar (energy)
 
-kippplot.plotConvection (logspace = False, points = None)
+kippplot.plotConvection (logspace = logSpace, points = points)
 
 # Generate the outer edge of the star
 mass, = kippplot.plotMax ('xmcoord', 1.0 / plots.kipp.msun, color = 'black', label = "Total Mass")
@@ -50,7 +51,7 @@ plt.grid ()
 plt.legend ()
 
 # This can equivalently be run with
-# kipp.jTDPlot (sys.argv [1])
+# plots.kipp.jTDPlot (sys.argv [1], logspace = False)
 
 if (len (sys.argv) > 2):
     plt.savefig (sys.argv [2])

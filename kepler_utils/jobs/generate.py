@@ -3,6 +3,7 @@ import subprocess
 import glob
 import hashlib
 import time
+import datetime
 
 import database.database as db
 
@@ -96,8 +97,8 @@ class Simulation (object):
                 print ("Dump files would clash with existing files.")
                 raise NameError ("Dump files would clash with existing files")
             else:
-                os.remove (os.path.join (run_location, name + ".cnv"))
-                for file in glob.glob (os.path.join (run_location, name + "#*")):
+                os.remove (os.path.join (self.run_location, self.name + ".cnv"))
+                for file in glob.glob (os.path.join (self.run_location, self.name + "#*")):
                     os.remove (file)
         return subprocess.Popen ([self.command, self.name, self.name + 'g'], cwd = self.run_location)
         
@@ -113,5 +114,16 @@ class Simulation (object):
                 print (type (e))
                 # time.sleep (5)
                 raise (e)
+                
+    def getLatest (self):
+        mostRecent = None
+        timeStamp = 0.0
+        for file in glob.glob (os.path.join (self.run_location, self.name + "#*")):
+            name = file.split ('/') [-1].split ('#') [-1]
+            newTime = datetime.datetime.fromtimestamp (os.path.getmtime(file))
+            if mostRecent is None or timeStamp < newTime:
+                mostRecent = name
+                timeStamp = newTime
+        return mostRecent
         
 # Simulation ("s15o.1s1", Generator (osfactor = 0.1, scpower = 1.0), run_location = 'generator', command = '/Users/justinbrown/Codes/kepler/run/kepler')

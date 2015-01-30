@@ -216,7 +216,7 @@ class FileEntry (object):
     
     @declared_attr
     def simulation (cls):
-        return sqlalchemy.orm.relationship ("SimulationEntry", backref = cls.__name__.lower ().replace ("entry", "") + "s")
+        return sqlalchemy.orm.relationship ("SimulationEntry", backref = sqlalchemy.orm.backref (cls.__name__.lower ().replace ("entry", "") + "s", cascade="all, delete-orphan"))
         
     def __init__ (self, **kwargs):
         super (FileEntry, self).__init__ (**kwargs)

@@ -20,7 +20,7 @@ def numToSize (num):
 session = db.Session ()
 
 query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid"))).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "Stabilized"))).filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Failed"))).filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "MS Jump")))
-query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 < 21.0).filter (db.DumpFileEntry.binm10 > 19.0)
+query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 > 21.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
 query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
 entries = [entry for sim, entry in query.all ()]
@@ -57,37 +57,30 @@ x = osfactors
 # Plot 1
 ax = axes [0] [0]
 ax.set_ylabel ("C/O")
-scs.append (ax.scatter (x, cocores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (x, cocores.to (u.solMass), 160, c = numToSize (scpowers), linewidths = lines, picker = True, alpha = 0.75))
 
 # Plot 2
 ax = axes [0] [1]
 ax.set_ylabel ("C/O in C/O Core")
-scs.append (ax.scatter (x, coratio, numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
-ylim = ax.get_ylim ()
-xlim = ax.get_xlim ()
-ax.plot ((0,10), (0,10), color = 'black')
-ax.set_ylim (ylim)
-ax.set_xlim (xlim)
+scs.append (ax.scatter (x, coratio, 160, c = numToSize (scpowers), linewidths = lines, picker = True, alpha = 0.75))
 
 # Plot 3
 ax = axes [1] [0]
 ax.set_ylabel ("Compactness")
-scs.append (ax.scatter (x, compactness, numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (x, compactness, 160, c = numToSize (scpowers), linewidths = lines, picker = True, alpha = 0.75))
 
-ax.set_xlabel ("He Core Mass")
+ax.set_xlabel ("Overshoot Factor")
 
 # Plot 4
 ax = axes [1] [1]
 ax.set_ylabel ("Fe Core")
-scs.append (ax.scatter (x, fecores.to (u.solMass), numToSize (scpowers), c = osfactors, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (x, fecores.to (u.solMass), 160, c = numToSize (scpowers), linewidths = lines, picker = True, alpha = 0.75))
 # ax.set_yscale ("log")
 
-ax.set_xlabel ("He Core Mass")
+ax.set_xlabel ("Overshoot Factor")
 
 figs = {}
 cnv_lines = {}
-
-print ("End of plots...")
 
 def onabunclose (event):
     line = cnv_lines.pop (event.canvas)
@@ -142,9 +135,9 @@ def onpick (event):
         # plt.draw ()
         event.canvas.draw ()
 
-        extent = range (cnvs [i].simulation.getStateDump ("hdep").ncyc, cnvs [i].simulation.getStateDump ("heign").ncyc)
+        # extent = range (cnvs [i].simulation.getStateDump ("hdep").ncyc, cnvs [i].simulation.getStateDump ("heign").ncyc)
 
-        newfig, ax = plots.kipp.jTDPlot (cnvs [i].get_data (), logspace = True, extent = extent)
+        newfig, ax = plots.kipp.jTDPlot (cnvs [i].get_data (), logspace = True)#, extent = extent)
 
         ax.set_title (cnvs [i].name)
 
@@ -155,9 +148,9 @@ def onpick (event):
     plt.show ()
 
 fig.subplots_adjust (right = 0.8, hspace = 0)
-# cbar_ax = fig.add_axes ([0.85, 0.15, 0.05, 0.7])
-# cb = fig.colorbar (scs [0], cax = cbar_ax)
-# cb.set_label ("Overshoot Factor")
+cbar_ax = fig.add_axes ([0.85, 0.15, 0.05, 0.7])
+cb = fig.colorbar (scs [0], cax = cbar_ax)
+cb.set_label ("Semi-Convection Strength")
 
 # ls = []
 # powers = []

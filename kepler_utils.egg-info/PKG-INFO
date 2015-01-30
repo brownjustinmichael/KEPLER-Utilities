@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: kepler-utils
+Version: 0.1
+Summary: A set of utilities for analyzing and running the stellar evolution code KEPLER
+Home-page: https://github.com/brownjustinmichael/KEPLER-Utilities
+Author: Justin Brown
+Author-email: jumbrown@ucsc.edu
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN

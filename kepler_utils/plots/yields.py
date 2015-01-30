@@ -15,7 +15,7 @@ class YieldPlot (object):
         else:
             self.imfIntegrator = IMFIntegrator (self.yieldReader.get_masses ())
             
-    def plot (self, ax, removeIsotopes = None, imfLowerLimit = None, imfUpperLimit = None):
+    def plot (self, ax, removeIsotopes = None, imfLowerLimit = None, imfUpperLimit = None, record = None, names = True, **kwargs):
         abundances = self.imfIntegrator.getAbundances (self.yieldReader, imfUpperLimit = imfUpperLimit, imfLowerLimit = imfLowerLimit)
 
         results = {}
@@ -33,6 +33,9 @@ class YieldPlot (object):
         masses = {}
         pFactors = {}
         isos = {}
+        if record is not None:
+            output = open (record, "w")
+            output.write ("# iso z a proFac\n")
         for isotope in self.yieldReader.isotopes:
             if isotope in ab.solar and isotope.string in results:
                 if isotope.z not in masses:
@@ -41,17 +44,23 @@ class YieldPlot (object):
                     isos [isotope.z] = isotope
                 masses [isotope.z].append (isotope.a)
                 pFactors [isotope.z].append (results [isotope.string])
+                if record is not None:
+                    output.write ("%s %i %i %f\n" % (isotope.string, isotope.z, isotope.a, results [isotope.string]))
+        if record is not None:
+            output.close ()
 
         keys = list (masses.keys ())
         keys.sort ()
         x = [masses [i] for i in keys]
         y = [pFactors [i] for i in keys]
         label = [isos [i].getElementLabel () for i in keys]
-
+        
         lines = []
+        marker = kwargs.pop ("marker", "o")
         for z in zip (x, y, label):
-            lines.append (ax.plot (z [0], z [1], marker = "o") [0])
-            ax.annotate (z [2], xy = (z [0] [0], z [1] [0]))
+            lines.append (ax.plot (z [0], z [1], marker = marker, **kwargs) [0])
+            if names:
+                ax.annotate (z [2], xy = (z [0] [0], z [1] [0]))
 
         ax.set_yscale ("log")
 
