@@ -8,4 +8,5 @@ setup(name='kepler_utils',
       author_email='jumbrown@ucsc.edu',
       license='MIT',
       packages=['kepler_utils'],
+      install_requires=["matplotlib","sqlalchemy","numpy","astropy","periodictable","fortranfile","pandas","celery"],
       zip_safe=False)
