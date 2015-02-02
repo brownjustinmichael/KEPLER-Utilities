@@ -5,22 +5,30 @@ class JankaParser (object):
     keys = {"Neutrino-driven explosion result without calculation of fallback:\n" : "without_fallback", "With fallback:\n" : "with_fallback", "Trajectories:\n" : "trajectories", "90% trajectory:\n" : "90%", "95% trajectory:\n" : "95%", "special trajectory:\n" : "special"}
     units = {"M_sun" : u.solMass, "foe" : 10.**51 * u.erg}
     
-    def __init__ (self, filename):
+    def __init__ (self, calibration, records):
+        self.calibration = calibration
+        self.records = collections.OrderedDict (sorted (records.items (), key = lambda x: x [1] ['M']))
+            
+    @classmethod
+    def readFrom (cls, filename):
         fileobj = open (filename, "r")
-        self.calibration = fileobj.readline ().split () [1]
+        calibration = fileobj.readline ().split () [1]
         fileobj.readline ()
         fileobj.readline ()
         
-        self.records = collections.OrderedDict ()
+        records = collections.OrderedDict ()
         
         try:
             while (True):
-                tup = self.read_record (fileobj)
-                self.records [tup [0]] = tup [1]
+                tup = cls.readRecord (fileobj)
+                records [tup [0]] = tup [1]
         except ValueError:
             pass
+            
+        return cls (calibration = calibration, records = records)
         
-    def read_record (self, fileobj):
+    @staticmethod
+    def readRecord (fileobj):
         record = {}
         line = fileobj.readline ()
         if line == "":
@@ -69,6 +77,9 @@ class JankaParser (object):
     def __iter__ (self):
         return iter (self.records)
         
+    def __in__ (self, record):
+        return record in self.records
+        
     def __getitem__ (self, index):
         indices = index.split (":")
         results = [self.records]
@@ -95,4 +106,16 @@ class JankaParser (object):
                     results [i] = u.Quantity (0.0 * resultunit)
             results = u.Quantity (results)
         return results
-    
+        
+    def __add__ (self, other):
+        for selfRecord in self:
+            if selfRecord in other:
+                raise TypeError ("Repeated mass")
+        if self.calibration != other.calibration:
+            raise TypeError ("Different calibrators used")
+        records = collections.OrderedDict ()
+        for selfRecord in self:
+            records [selfRecord] = self.records [selfRecord]
+        for otherRecord in other:
+            records [otherRecord] = other.records [otherRecord]
+        return JankaParser (calibration = self.calibration, records = records)

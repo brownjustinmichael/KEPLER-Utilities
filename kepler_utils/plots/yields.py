@@ -1,9 +1,9 @@
 import astropy.units as u
 import numpy as np
 
-import yields.abundances as ab
-from records.dump import Isotope
-from yields.integrator import IMFIntegrator
+from kepler_utils.yields.abundances import solar
+from kepler_utils.records.dump import Isotope
+from kepler_utils.yields.integrator import IMFIntegrator
 
 class YieldPlot (object):
     """Plots numerically integrated yields"""
@@ -20,7 +20,7 @@ class YieldPlot (object):
 
         results = {}
         for isotope in self.yieldReader.isotopes:
-            if isotope in ab.solar:
+            if isotope in solar:
                 results [isotope.string] = abundances.productionFactor (isotope)
         
         if removeIsotopes is not None:
@@ -37,7 +37,7 @@ class YieldPlot (object):
             output = open (record, "w")
             output.write ("# iso z a proFac\n")
         for isotope in self.yieldReader.isotopes:
-            if isotope in ab.solar and isotope.string in results:
+            if isotope in solar and isotope.string in results:
                 if isotope.z not in masses:
                     masses [isotope.z] = []
                     pFactors [isotope.z] = []

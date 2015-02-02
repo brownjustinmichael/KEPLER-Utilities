@@ -136,7 +136,7 @@ def onpick (event):
 
         # extent = range (cnvs [i].simulation.getStateDump ("hdep").ncyc, cnvs [i].simulation.getStateDump ("heign").ncyc)
 
-        newfig, ax = plots.kipp.jTDPlot (cnvs [i].get_data (), logspace = True)#, extent = extent)
+        newfig, ax = kepler_utils.plots.kipp.jTDPlot (cnvs [i].get_data (), logspace = True)#, extent = extent)
 
         ax.set_title (cnvs [i].name)
 
