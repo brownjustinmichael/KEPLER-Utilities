@@ -25,7 +25,6 @@ class Integrator (object):
         return np.sum (array [mask] * freq [mask])
         
     def __add__ (self, other):
-        print (self.normalize)
         freq = np.concatenate ((self.freq, other.freq))
         normalize = np.concatenate ((self.normalize, other.normalize))
         return Integrator (freq, normalize)
@@ -82,7 +81,6 @@ class IMFIntegrator (Integrator):
         self.alpha = alpha
         self.masses = u.Quantity (initial_masses [:])
         self.original_normalize = normalize
-        # If we're here, a numberArray was not specified. Use a Salpeter IMF and check that the mass range is monotonic TODO allow for nonmonotonic mass arrays
         
         if alpha == -1.0:
             raise ValueError ("Take your own logarithms.")

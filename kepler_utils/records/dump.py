@@ -70,13 +70,16 @@ class Isotope(object):
     def __repr__ (self):
         return self.string
         
-    def getLabel (self):
+    def getLabel (self, inMath = False):
         """
         Return a LaTeX version of the string representation of the isotope
         """
-        return self.label
+        if inMath:
+            return self.label.strip ("$").rstrip ("$")
+        else:
+            return self.label
         
-    def getElementLabel (self):
+    def getElementLabel (self, inMath = False):
         label = ''.join([i for i in self.string if not i.isdigit()])
         if self.string == 'nt1':
             label = '$n$'
@@ -88,8 +91,10 @@ class Isotope(object):
             label = "$\\mathrm{\\lq{Fe}\\rq}$"
         else:
             label = '$\mathrm{' + label.capitalize () + '}$'
-        return label
-        
+        if inMath:
+            return label.strip ("$").rstrip ("$")
+        else:
+            return label        
     @staticmethod
     def makeLabel (string, a):
         """

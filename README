@@ -1,12 +1,8 @@
 Installation:
 
-Be sure to install the following python packages somewhere where your python distribution can see them:
-	-numpy
-	-astropy
-	-pandas
-	-matplotlib
-	-sqlalchemy (If interested in using database.py and update_db.py)
-	-celery (If interested in using generate.py and kepler_jobs.py)
+To install kepler_utils and its dependencies, run
+
+python setup.py install
 
 I recommend Python 3.4, but let me know if another version isn't working.
 
