@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 
 from kepler_utils.database.database import DumpFileEntry, CNVFileEntry

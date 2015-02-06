@@ -1,4 +1,5 @@
 from setuptools import setup
+import os
 
 setup(name='kepler_utils',
       version='0.1',
@@ -9,4 +10,5 @@ setup(name='kepler_utils',
       license='MIT',
       packages=['kepler_utils'],
       install_requires=["matplotlib","sqlalchemy","numpy","astropy","periodictable","fortranfile","pandas","celery"],
+      scripts=[os.path.join (root, file) for root, subdirs, files in os.walk ("scripts") for file in files],
       zip_safe=False)

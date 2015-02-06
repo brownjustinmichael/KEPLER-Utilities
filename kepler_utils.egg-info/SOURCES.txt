@@ -1,4 +1,5 @@
 README
+scripts
 setup.py
 kepler_utils/__init__.py
 kepler_utils.egg-info/PKG-INFO
@@ -7,3 +8,18 @@ kepler_utils.egg-info/dependency_links.txt
 kepler_utils.egg-info/not-zip-safe
 kepler_utils.egg-info/requires.txt
 kepler_utils.egg-info/top_level.txt
+scripts/tmux_script
+scripts/database/parameters.py
+scripts/database/run_ossc_grid.py
+scripts/database/update_db.py
+scripts/evolution/cores.py
+scripts/evolution/plot_abundances.py
+scripts/evolution/plot_cores.py
+scripts/evolution/plot_cores_os.py
+scripts/evolution/plot_cores_sc.py
+scripts/evolution/plot_hr.py
+scripts/evolution/plot_kipp.py
+scripts/evolution/plot_nuc.py
+scripts/evolution/plot_os_fraction.py
+scripts/evolution/plot_timelapse.py
+scripts/integration/plot_integration.py

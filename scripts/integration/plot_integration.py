@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from kepler_utils.yields.yields import YieldReader
 from kepler_utils.yields.integrator import IMFIntegrator, Integrator
 import astropy.units as u

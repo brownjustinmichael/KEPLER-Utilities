@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import database.database
 import matplotlib.pyplot as plt
 import matplotlib
