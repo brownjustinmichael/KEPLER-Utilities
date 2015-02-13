@@ -64,7 +64,10 @@ class YieldPlot (object):
 
         keys = list (masses.keys ())
         keys.sort ()
-        x = [masses [i] for i in keys]
+        if elements:
+            x = [[i] * len (masses [i]) for i in keys]
+        else:
+            x = [masses [i] for i in keys]
         y = [pFactors [i] for i in keys]
         label = [isos [i].getElementLabel () for i in keys]
         
@@ -106,6 +109,7 @@ class YieldPlot (object):
         if relativeIso is None:
             ax.set_ylabel ("Production Factor")
         elif elements:
+            ax.set_xlabel ("Atomic Number")
             ax.set_ylabel ("$\\frac{X}{%s}/\\left.\\frac{X}{%s}\\right|_{\\mathrm{solar}}$" % (Isotope (relativeIso).getElementLabel (inMath = True), Isotope (relativeIso).getElementLabel (inMath = True)))
         else:
             ax.set_ylabel ("$\\frac{X}{%s}/\\frac{X}{%s}_{\\mathrm{solar}}$" % (Isotope (relativeIso).getLabel (inMath = True), Isotope (relativeIso).getLabel (inMath = True)))

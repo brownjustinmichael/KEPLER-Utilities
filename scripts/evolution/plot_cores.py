@@ -7,21 +7,24 @@ import astropy.units as u
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
+import matplotlib.cm as cm
 import sqlalchemy
 
-import kepler_utils.records.dump
+from kepler_utils.records.dump import DataDump
 import kepler_utils.database.database as db
 import kepler_utils.database.cache as cache
 import kepler_utils.plots.kipp
-import kepler_utils.plots.abundances
+from kepler_utils.plots.abundances import jTDPlot
 
 def numToSize (num):
-    return 70 * (-np.log2 (num) + 4)
+    return 70 * (-np.log2 (num) + 3)
 
 session = db.Session ()
 
 query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
-query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 > 21.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
+query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "MS Jump")))
+query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Blue Loop")))
+query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 < 16.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
 query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
 entries = [entry for sim, entry in query.all ()]
@@ -32,53 +35,55 @@ if len (entries) == 0:
     raise ValueError ("No entries in query")
 
 hecores = u.Quantity ([entry.cache (session, 'he_core', cache.calculate_he_core) for entry in entries])
-# earlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core', cache.calculate_he_core) for sim in sims])
+prehecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'pre_he_core', cache.calculate_he_core) for sim in sims])
+earlyhecores = u.Quantity ([sim.getStateDump ("heign").cache (session, 'early_he_core', cache.calculate_he_core) for sim in sims])
+prehcontain = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'early_h_contained', cache.calculate_h_contained) for sim in sims])
+earlyhcontain = u.Quantity ([sim.getStateDump ("heign").cache (session, 'early_h_contained', cache.calculate_h_contained) for sim in sims])
 cocores = u.Quantity ([entry.cache (session, 'co_core', cache.calculate_co_core) for entry in entries])
 coratio = u.Quantity ([entry.cache (session, 'co_ratio', cache.calculate_co_ratio_in_core) for entry in entries])
 compactness = u.Quantity ([entry.cache (session, 'compactness', cache.calculate_compactness_2_5) for entry in entries])
-# # sicores = u.Quantity ([entry.cache (session, 'si_core', cache.calculate_si_core) for entry in entries])
 fecores = u.Quantity ([entry.cache (session, 'fe_core', cache.calculate_fe_core) for entry in entries])
-# radii = u.Quantity ([sim.getStateDump ("hburn").radius * u.cm for sim in sims])
-# tasbsg = u.Quantity ([cnv.cache (session, 'tasbsg', cache.calculate_tasbsg) for cnv in cnvs])
-# tms = u.Quantity ([sim.getStateDump ("heign").time * u.s for sim in sims])
 
 lines = np.zeros (len (entries))
 
 osfactors = np.array ([entry.osfactor if (entry.brumoson > 0.0) else 1 for entry in entries])
 scpowers = np.array ([entry.scpower for entry in entries])
 
-# print (numToSize (scpowers))
-
-fig, axes = plt.subplots (2, 2, sharex = True, figsize = (18, 10))
+fig, axes = plt.subplots (2, 2, sharex = False, figsize = (18, 10))
 
 scs = []
 
-x = osfactors
+x1 = prehcontain.to (u.solMass)
+x2 = earlyhcontain.to (u.solMass)
+colors = osfactors
+sizes = numToSize (scpowers)
 
 # Plot 1
 ax = axes [0] [0]
 ax.set_ylabel ("C/O")
-scs.append (ax.scatter (x, cocores.to (u.solMass), 160, c = numToSize (scpowers), linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (x1, cocores.to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75))
 
 # Plot 2
 ax = axes [0] [1]
 ax.set_ylabel ("C/O in C/O Core")
-scs.append (ax.scatter (x, coratio, 160, c = numToSize (scpowers), linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (x2, cocores.to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75))
 
 # Plot 3
 ax = axes [1] [0]
 ax.set_ylabel ("Compactness")
-scs.append (ax.scatter (x, compactness, 160, c = numToSize (scpowers), linewidths = lines, picker = True, alpha = 0.75))
 
-ax.set_xlabel ("Overshoot Factor")
+scs.append (ax.scatter (x1, (earlyhecores - prehecores).to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75))
+
+ax.set_xlabel ("Core Mass")
 
 # Plot 4
 ax = axes [1] [1]
 ax.set_ylabel ("Fe Core")
-scs.append (ax.scatter (x, fecores.to (u.solMass), 160, c = numToSize (scpowers), linewidths = lines, picker = True, alpha = 0.75))
+ax.plot (x2, x2)
+scs.append (ax.scatter (x2, (prehcontain).to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75))
 # ax.set_yscale ("log")
 
-ax.set_xlabel ("Overshoot Factor")
+ax.set_xlabel ("Core Mass")
 
 figs = {}
 cnv_lines = {}
@@ -107,8 +112,8 @@ def onclick (event):
 
     for entry in session.query (db.DumpFileEntry).filter (db.DumpFileEntry.simulation == sims [i]).order_by (db.DumpFileEntry.toffset, db.DumpFileEntry.time).all ():
         if u.Quantity (entry.time + entry.toffset, 's') > u.Quantity (time, 'year'):
-            newfig, ax = plots.abundances.jTDPlot (entry.file)
-            record = records.dump.DataDump (entry.file, False)
+            newfig, ax = jTDPlot (entry.file)
+            record = DataDump (entry.file, False)
             ax.plot (record ["mass coordinate"].to (u.solMass) [1:], (np.log (record ["tn"] [1:].value) - np.log (record ["tn"] [:-1].value)) / (np.log (record ["pn"] [1:].value) - np.log (record ["pn"] [:-1].value)), label = "Grad")
             ax.plot (record ["mass coordinate"].to (u.solMass), (record ["xln"] / 1.e6 / u.solLum).to (1), label = "L/Lsun")
             ax.plot (record ["mass coordinate"].to (u.solMass), (record ["dn"] / 1.e3), label = "D")
@@ -151,7 +156,7 @@ def onpick (event):
 fig.subplots_adjust (right = 0.8, hspace = 0)
 cbar_ax = fig.add_axes ([0.85, 0.15, 0.05, 0.7])
 cb = fig.colorbar (scs [0], cax = cbar_ax)
-cb.set_label ("Semi-Convection Strength")
+cb.set_label ("Overshoot Factor")
 
 # ls = []
 # powers = []

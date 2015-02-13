@@ -13,23 +13,12 @@ app.config_from_object (celeryconfig)
 # To purge all queued jobs, use celery amqp queue.purge <QUEUE NAME>
 
 @app.task
-def run (name, original, run_location = '.', command = './kepler', force = False, query = None, tags = None, goal = "presn", **kwargs):
+def run (name, original, run_location = '.', command = './kepler', force = False, query = False, tags = None, goal = "presn", **kwargs):
     generator = Generator (original)
     sim = Simulation (name, generator, run_location, command, force)
-    try:
-        p = sim.run (query = query, **kwargs)
-        output = p.communicate () [0]
-        ret = p.wait ()
-    except TypeError as e:
-        print (e)
-        pass
-    except NameError as e:
-        print (e)
-        pass
-    except Exception as e:
-        print (e)
-        print (type (e))
-        p.terminate ()
+    p = sim.run (query = query, **kwargs)
+    output = p.communicate () [0]
+    ret = p.wait ()
     sim.rebase (tags)
     latest = sim.getLatest ()
     if latest != goal:

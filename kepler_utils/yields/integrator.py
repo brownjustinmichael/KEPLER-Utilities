@@ -44,12 +44,13 @@ class Integrator (object):
         yd = {}
         mask = None
         if imfUpperLimit is not None:
-            mask = yieldReader.get_masses () < imfUpperLimit * 1.01
+            mask = np.logical_or (yieldReader.get_masses () < imfUpperLimit * 1.01, yieldReader.get_masses () == 0.0 * imfLowerLimit.unit)
         if imfLowerLimit is not None:
-            if mask is None:
-                mask = yieldReader.get_masses () > imfLowerLimit * 0.99
+            maskUpper = np.logical_or (yieldReader.get_masses () > imfLowerLimit * 0.99, yieldReader.get_masses () == 0.0 * imfUpperLimit.unit)
+            if mask is not None:
+                mask = np.logical_and (mask, maskUpper)
             else:
-                mask = np.logical_and (mask, yieldReader.get_masses () > imfLowerLimit * 0.99)
+                mask = maskUpper
            
         for isotope in yieldReader.isotopes:
             value = self (yieldReader.get_yield (isotope), mask = mask)

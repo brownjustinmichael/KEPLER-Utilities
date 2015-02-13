@@ -20,17 +20,37 @@ class Isotope(object):
     """
     def __init__(self, string, a = None, z = None, **kwargs):
         super (Isotope, self).__init__()
-        self.string = string
+        
+        try:
+            self.string = string.decode ()
+        except AttributeError:
+            self.string = string
+        
+        reverse = False
+        if self.string [0].isdigit ():
+            reverse = True
+        
         j = 0
         for i in self.string:
             if i.isdigit ():
                 break
             j += 1
-        newstring = self.string [j:] + '-' + self.string [:j].title ()
+        k = 0
+        for i in self.string:
+            if not i.isdigit ():
+                break
+            k += 1
+            
+        if not reverse:
+            symbol = self.string [:j]
+            mass = int (self.string [j:])
+        else:
+            symbol = self.string [k:]
+            mass = int (self.string [:k])
             
         self.a = a
         if self.a is None:
-            self.a = int (self.string [j:])
+            self.a = mass
             
         self.z = z
         if self.z is None:
@@ -40,7 +60,9 @@ class Isotope(object):
             elif self.string == "ye":
                 self.z = 0
             else:
-                self.z = getattr (periodictable, self.string [:j].title ()).number
+                self.z = getattr (periodictable, symbol.title ()).number
+            
+        self.string = symbol.lower () + str (mass)
             
         self.data = {}
         self.label = self.makeLabel (self.string, self.a)

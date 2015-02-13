@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 
-import database.database
+from kepler_utils.database.database import Session, DumpFileEntry, SimulationEntry, Tag
 import matplotlib.pyplot as plt
 import matplotlib
 import sqlalchemy
 import numpy
 
-session = database.database.Session ()
+session = Session ()
 
-query = session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.binm10 > 14.9).filter (database.database.DumpFileEntry.binm10 < 15.1)
-query = session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.brumoson > 0.0).filter (database.database.DumpFileEntry.woodscon > 0.0)
-query = session.query (database.database.DumpFileEntry).filter (database.database.DumpFileEntry.scpower > 0.0)
-query = query.filter (database.database.DumpFileEntry.state == 'presn')
+query = session.query (DumpFileEntry).filter (DumpFileEntry.binm10 > 21.1).join (SimulationEntry)
+query = query.filter (DumpFileEntry.brumoson > 0.0).filter (DumpFileEntry.woodscon > 0.0)
+query = query.filter (DumpFileEntry.scpower > 0.0)
+query = query.filter (DumpFileEntry.state == 'presn')
 
 osfactors = numpy.array ([entry.osfactor for entry in query.all ()])
 scpowers = numpy.array ([entry.scpower for entry in query.all ()])

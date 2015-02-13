@@ -22,12 +22,12 @@ random.shuffle (sets)
             
 generator = os.path.join(os.path.dirname(os.path.realpath(kepler_utils.__file__)), "jobs/generator/s25vg")
 
-command = "/Users/justinbrown/Codes/kepler/run/kepler"
-run_location = "/Users/justinbrown/Codes/kepler/run/s25"
+command = "/Users/justinbrown/Codes/kepler/gfortran/keplery"
+run_location = "/Users/justinbrown/Dropbox/Research/Stan/kepler/s25"
 
 for osht, semi in sets:
     name = "s25n" + str (osht).replace ('0', '') + str (semi)
-    kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': True, 'scpower': 2.0 ** semi, 'osfactor': osht, 'tags': ['OS/SC Grid', 'Stabilized']}, queue = 'default')
+    kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': True, 'scpower': 2.0 ** semi, 'osfactor': osht, 'tags': ['OS/SC Grid', 'Stabilized'], "query": True}, queue = 'default')
 
 # generator = os.path.join(os.path.dirname(os.path.realpath(__file__)), "jobs/generator/s20hg")
 # run_location = "/Users/justinbrown/Codes/kepler/run/s20"

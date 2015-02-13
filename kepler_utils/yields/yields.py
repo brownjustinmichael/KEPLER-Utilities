@@ -5,8 +5,27 @@ import numpy as np
 from kepler_utils.records.dump import Isotope
 from pandas import DataFrame
 
+def fromKeplerYield (filename, directory):
+    f = open (directory + filename, "r")
+    i = 1
+    prevLine = "None"
+    line = f.readline ()
+    for j in range (2):
+        while line.split () != [] or prevLine.split () != []:
+            prevLine = line
+            line = f.readline ()
+            i += 1
+        prevLine = line
+        line = f.readline ()
+        i += 1
+    while line.split () != []:
+        prevLine = line
+        line = f.readline ()
+        i += 1
+    return i
+
 class YieldReader (object):
-    def __init__ (self, directory = "yields/wh07/", extension = ".yield", masses = None, winds = True, explosions = True):
+    def __init__ (self, directory = "yields/wh07/", extension = ".yield", masses = None, winds = True, explosions = True, keplerYield = True, totalYieldName = "yieldall", windYieldName = "yieldwind", expYieldName = None, isotopeName = "isotope"):
         results = collections.OrderedDict ()
         mass_file = {}
         self.models = []
@@ -31,27 +50,15 @@ class YieldReader (object):
                     mass_file [(float (name [1:]))] = file
             except ValueError:
                 mass_file [0.0] = file
-
+            
         while len (mass_file) > 0:
             mass_min = min (mass_file) * u.solMass
             filename = mass_file.pop (min (mass_file))
-            f = open (directory + filename, "r")
-            i = 1
-            prevLine = "None"
-            line = f.readline ()
-            for j in range (2):
-                while line.split () != [] or prevLine.split () != []:
-                    prevLine = line
-                    line = f.readline ()
-                    i += 1
-                prevLine = line
-                line = f.readline ()
-                i += 1
-            while line.split () != []:
-                prevLine = line
-                line = f.readline ()
-                i += 1
-            results [mass_min] = np.genfromtxt (directory + filename, skip_header = i, names = True, usecols = [0, 1, 6], dtype = ("|S8", "f8", "f8"))
+            if keplerYield:
+                i = fromKeplerYield (filename, directory)
+            else:
+                i = 0
+            results [mass_min] = np.genfromtxt (directory + filename, skip_header = i, names = True, dtype = None)
             
         self.masses = u.Quantity ([result for result in results])
         if masses is not None:
@@ -69,16 +76,23 @@ class YieldReader (object):
             if self.masses [i] > result * 1.01:
                 continue
             yieldDF = {}
-            for isotope, exp_yield, wind_yield in results [result]:
-                if isotope.decode () == "total":
+            for row in results [result]:
+                if row [isotopeName] == "total" or row [isotopeName] == b"total":
                     break
-                if isotope.decode () not in self.isotopes:
-                    self.isotopes.append (isotope.decode ())
-                yieldDF [isotope.decode ()] = 0.0
-                if self.winds:
-                    yieldDF [isotope.decode ()] += wind_yield
-                if self.explosions:
-                    yieldDF [isotope.decode ()] += (exp_yield - wind_yield)
+                isotope = Isotope (row [isotopeName]).string
+                if isotope not in self.isotopes:
+                    self.isotopes.append (isotope)
+                yieldDF [isotope] = 0.0
+                if self.winds and self.explosions and totalYieldName is not None:
+                    yieldDF [isotope] += float (row [totalYieldName])
+                else:
+                    if self.winds:
+                        yieldDF [isotope] += float (row [windYieldName])
+                    if self.explosions:
+                        if expYieldName is None:
+                            yieldDF [isotope] += float (row [totalYieldName]) - float (row [windYieldName])
+                        else:
+                            yieldDF [isotope] += row [expYieldName]
             self.yields = self.yields.append (yieldDF, ignore_index = True)
             self.models.append (True)
             i += 1
@@ -93,6 +107,11 @@ class YieldReader (object):
     def get_yield (self, isotope, massArray = None, tolerance = 0.0001):
         if isinstance (isotope, Isotope):
             isotope = isotope.string
+        if isotope not in self.yields:
+            if massArray is None:
+                return u.Quantity ([0.0] * len (self.yields), u.solMass)
+            return u.Quantity ([0.0] * len (massArray), u.solMass)
+                
         if massArray is None:
             return u.Quantity (self.yields [isotope], u.solMass)
         return u.Quantity (self.yields [isotope].iloc [massArray], u.solMass)

@@ -193,16 +193,6 @@ class SimulationEntry (Base):
             self.tags.append (tag)
         session.commit ()
 
-# @sqlalchemy.event.listens_for(Session, 'after_flush')
-# def delete_sim_orphans(session, ctx):
-#     """
-#     A simulation can only exist if it contains at least one file. After flushing the session, delete any orphaned simulations
-#     """
-#     session.query(SimulationEntry).\
-#         filter(~SimulationEntry.dumpfiles.any()).\
-#         filter(~SimulationEntry.cnvfiles.any()).\
-#         delete(synchronize_session=False)
-
 class FileEntry (object):
     """
     This base mixin is a superclass for a file entry object, and it contains all the pieces that will be needed for any generic file entry
@@ -356,7 +346,7 @@ class DumpFileEntry (FileEntry, Base):
     state = sqlalchemy.Column (sqlalchemy.String)
         
     def __repr__(self):
-       return "<Dump (name='%s', timestep='%s', state=%s)>" % (self.simulation.name, self.timestep, self.state)
+        return "<Dump (name='%s', timestep='%s', state=%s)>" % (self.simulation.name, self.timestep, self.state)
     
     def __init__ (self, **kwargs):
         super (DumpFileEntry, self).__init__ (**kwargs)
@@ -388,6 +378,8 @@ class DumpFileEntry (FileEntry, Base):
                 pass
         
     def get_data (self, cache = True, **kwargs):
+        if self.dataobject is not None:
+            return self.dataobject
         dataobject = DataDump (self.file, **kwargs)
         if not cache:
             return dataobject
@@ -429,6 +421,9 @@ class Tag (Base):
     
     id = sqlalchemy.Column (sqlalchemy.Integer, primary_key = True)
     tag = sqlalchemy.Column (sqlalchemy.String, unique=True)
+    
+    def __repr__ (self):
+        return "<Tag %s>" % self.tag
     
     @classmethod
     def get (cls, session, tag):

@@ -13,6 +13,9 @@ def calculate_co_ratio_in_core (datadump):
 def sum_iso (isotope, datadump):
     return np.sum (datadump ['xm'] * datadump [isotope])
     
+def calculate_h_contained (datadump):
+    return datadump ["mass coordinate"] [np.argmax (np.cumsum (datadump ['xm'] * datadump ["h1"]) > 1.0 * u.solMass)]
+    
 def calculate_he_core (datadump):
     return datadump ['mass coordinate'] [np.argmax (datadump ['h1'] > 0.1)]
     

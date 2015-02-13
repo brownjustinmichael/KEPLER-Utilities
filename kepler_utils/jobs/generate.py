@@ -5,7 +5,7 @@ import hashlib
 import time
 import datetime
 
-from kepler_utils.database.database import SimulationEntry, DumpFileEntry, CNVFileEntry
+from kepler_utils.database.database import SimulationEntry, DumpFileEntry, CNVFileEntry, Session
 
 class Generator (object):
     """docstring for Generator """
@@ -103,6 +103,12 @@ class Simulation (object):
         return subprocess.Popen ([self.command, self.name, self.name + 'g'], cwd = self.run_location)
         
     def rebase (self, tags = None):
+        session = Session ()
+        try:
+            session.delete (session.query (SimulationEntry).filter_by (SimulationEntry.path = self.run_location, SimulationEntry.name = self.name).one ())
+            session.commit ()
+        except Exception as e:
+            print (type (e), e)
         while True:
             try:
                 DumpFileEntry.scan_for_updates (self.run_location, self.name + "#*", tags, template_name = self.generator.original, log_info = True)
