@@ -18,7 +18,7 @@ if len (sys.argv) > 3:
     tags = sys.argv [3:]
 else:
     tags = []
-
-DumpFileEntry.scan_for_updates (path, globstring + '#*', tags = tags)
+    
+DumpFileEntry.scan_for_updates (path, globstring + '#*', tags = tags, log_info = True)
 
 CNVFileEntry.scan_for_updates (path, globstring + '.cnv', tags = tags)

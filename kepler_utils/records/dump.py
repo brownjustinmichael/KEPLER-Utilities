@@ -43,7 +43,10 @@ class Isotope(object):
             
         if not reverse:
             symbol = self.string [:j]
-            mass = int (self.string [j:])
+            try:
+                mass = int (self.string [j:])
+            except ValueError:
+                mass = 0
         else:
             symbol = self.string [k:]
             mass = int (self.string [:k])

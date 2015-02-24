@@ -14,10 +14,10 @@ wyr = YieldReader (explosions = False)
 wimf = IMFIntegrator (wyr.get_masses ())
 
 # Grab the yields and IMF from T's W18 calibrated runs, for which the masses must be stated explicitly because we're missing models; do not include the winds from these sets
-# yr = YieldReader (directory = "yields/y_data_W18_special_13x6_14x9/", masses = np.arange (13.6, 14.9, 0.1) * u.solMass, winds = False)
-# yr += YieldReader (directory = "yields/y_data_W18_special_15x0_30x0/", masses = np.arange (15.0, 30.0, 0.1) * u.solMass, winds = False)
-# yr += YieldReader (directory = "yields/y_data_W18_special_31_120/", masses = np.array ([31, 32, 33, 35, 40, 45, 50, 55, 60, 70, 80, 100, 120]) * u.solMass, winds = False)
-yr = YieldReader (directory = "yields/y_data_N20_special_13x6_120/", masses = np.array (list (np.arange (13.6, 30.0, 0.1)) + [31, 32, 33, 35, 40, 45, 50, 55, 60, 70, 80, 100, 120]) * u.solMass, winds = False)
+yr = YieldReader (directory = "yields/y_data_W18_special_13x6_14x9/", masses = np.arange (13.6, 14.9, 0.1) * u.solMass, winds = False)
+yr += YieldReader (directory = "yields/y_data_W18_special_15x0_30x0/", masses = np.arange (15.0, 30.0, 0.1) * u.solMass, winds = False)
+yr += YieldReader (directory = "yields/y_data_W18_special_31_120/", masses = np.array ([31, 32, 33, 35, 40, 45, 50, 55, 60, 70, 80, 100, 120]) * u.solMass, winds = False)
+# yr = YieldReader (directory = "yields/y_data_N20_special_13x6_120/", masses = np.array (list (np.arange (13.6, 30.0, 0.1)) + [31, 32, 33, 35, 40, 45, 50, 55, 60, 70, 80, 100, 120]) * u.solMass, winds = False)
 imf = IMFIntegrator (yr.get_masses ())
 
 # Grab the yields from our Ia model of choice; if using the w7 model, we'll need to be more explicit since it isn't stored in a kepler yield format

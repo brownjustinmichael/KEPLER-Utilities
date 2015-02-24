@@ -16,7 +16,7 @@ import kepler_utils.plots.shiftlog
 # matplotlib.rc ('text', usetex = True)
 
 useModels = False
-logSpace = False
+logSpace = True
 points = 400
 
 # Read in the KEPLER cnv output file into cnv_record
@@ -24,14 +24,14 @@ if (len (sys.argv) < 2):
     print ("Usage: plot_kipp cnv_file (output_file)")
     exit ()
 
-cnv_record = records.cnv.CNVFile (sys.argv [1])
+cnv_record = kepler_utils.records.cnv.CNVFile (sys.argv [1])
 
 # Generate a matplotlib figure with one subplot
 fig = plt.figure (figsize = (18,10))
 ax = plt.subplot (111)
 
 # Initialize the KippenhahnPlot object with the given axis and record file
-kippplot = plots.kipp.KippenhahnPlot (ax, cnv_record, useModels = useModels)
+kippplot = kepler_utils.plots.kipp.KippenhahnPlot (ax, cnv_record, useModels = useModels)
 
 energy, = kippplot.plotEnergy (logspace = logSpace, points = points)
 cb = kippplot.addEnergyColorBar (energy)
@@ -39,10 +39,11 @@ cb = kippplot.addEnergyColorBar (energy)
 kippplot.plotConvection (logspace = logSpace, points = points)
 
 # Generate the outer edge of the star
-mass, = kippplot.plotMax ('xmcoord', 1.0 / plots.kipp.msun, color = 'black', label = "Total Mass")
+mass, = kippplot.plotMax ('xmcoord', 1.0 / kepler_utils.plots.kipp.msun, color = 'black', label = "Total Mass")
 
 # Set the axis to be logarithmically scaled around the end of the star's life, with exponents increasing backward
-# ax.set_xscale ('shiftlog', base = 10, zero = kippplot.tend, sign = -1.0)
+if logSpace:
+    ax.set_xscale ('shiftlog', base = 10, zero = kippplot.tend, sign = -1.0)
 
 # Set the plot limits and show the grid and legend
 ax.set_xlim (kippplot.xmin, kippplot.xmax - 10.**-5)

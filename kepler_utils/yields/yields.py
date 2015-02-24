@@ -68,7 +68,6 @@ class YieldReader (object):
         self.isotopes = []
         i = 0
         for result in results:
-            print (result, results [result])
             while i < len (self.masses) and self.masses [i] < result * 0.999999:
                 self.yields = self.yields.append ({}, ignore_index = True)
                 self.models.append (False)

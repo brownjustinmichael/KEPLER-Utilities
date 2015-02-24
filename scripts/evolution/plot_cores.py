@@ -23,8 +23,8 @@ session = db.Session ()
 
 query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
 query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "MS Jump")))
-query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Blue Loop")))
-query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 < 16.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
+# query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Blue Loop")))
+query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 < 24.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
 query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
 entries = [entry for sim, entry in query.all ()]
@@ -53,8 +53,8 @@ fig, axes = plt.subplots (2, 2, sharex = False, figsize = (18, 10))
 
 scs = []
 
-x1 = prehcontain.to (u.solMass)
-x2 = earlyhcontain.to (u.solMass)
+x1 = hecores.to (u.solMass)
+x2 = hecores.to (u.solMass)
 colors = osfactors
 sizes = numToSize (scpowers)
 
@@ -66,13 +66,13 @@ scs.append (ax.scatter (x1, cocores.to (u.solMass), c = colors, s = sizes, linew
 # Plot 2
 ax = axes [0] [1]
 ax.set_ylabel ("C/O in C/O Core")
-scs.append (ax.scatter (x2, cocores.to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (x2, coratio, c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75))
 
 # Plot 3
 ax = axes [1] [0]
 ax.set_ylabel ("Compactness")
 
-scs.append (ax.scatter (x1, (earlyhecores - prehecores).to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (x1, compactness, c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75))
 
 ax.set_xlabel ("Core Mass")
 
@@ -80,7 +80,7 @@ ax.set_xlabel ("Core Mass")
 ax = axes [1] [1]
 ax.set_ylabel ("Fe Core")
 ax.plot (x2, x2)
-scs.append (ax.scatter (x2, (prehcontain).to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75))
+scs.append (ax.scatter (x2, fecores.to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75))
 # ax.set_yscale ("log")
 
 ax.set_xlabel ("Core Mass")

@@ -275,14 +275,13 @@ class FileEntry (object):
         
         try:
             # print ("Checking for a corresponding simulation in the database...")
-            if runid is None:
-                simulation = session.query (SimulationEntry).filter_by (name = name).filter_by (path = os.path.dirname (file)).one ()
-            else:
-                simulation = session.query (SimulationEntry).filter_by (runid = runid).one ()
-        except sqlalchemy.orm.exc.MultipleResultsFound:
-            if log_info:
-                print ("Multiple possible simulations in database, skipping")
-            return
+            simulation = session.query (SimulationEntry).filter_by (name = name).filter_by (path = os.path.dirname (file)).one ()
+            if runid is not None and simulation.runid != runid:
+                print ("Warning: Simulation runid does not match run, resetting")
+                # raise RuntimeError ("Simulation at %s with name %s does not match file %s" % (os.path.dirname (file), name, file_name))
+                session.delete (simulation)
+                session.commit ()
+                raise sqlalchemy.orm.exc.NoResultFound
         except sqlalchemy.orm.exc.NoResultFound:
             if log_info:
                 print ("No appropriate simulation found: creating")
