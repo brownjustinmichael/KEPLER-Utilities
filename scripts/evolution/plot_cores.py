@@ -22,9 +22,9 @@ def numToSize (num):
 session = db.Session ()
 
 query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
-query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "MS Jump")))
+query = query.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "Low dtcp")))
 # query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Blue Loop")))
-query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 < 24.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
+query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 < 19.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
 query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
 entries = [entry for sim, entry in query.all ()]
@@ -44,7 +44,7 @@ coratio = u.Quantity ([entry.cache (session, 'co_ratio', cache.calculate_co_rati
 compactness = u.Quantity ([entry.cache (session, 'compactness', cache.calculate_compactness_2_5) for entry in entries])
 fecores = u.Quantity ([entry.cache (session, 'fe_core', cache.calculate_fe_core) for entry in entries])
 
-lines = np.zeros (len (entries))
+lines = [0 if db.Tag.get (session, "Low dtcp") in sim.tags else 3 for sim in sims]
 
 osfactors = np.array ([entry.osfactor if (entry.brumoson > 0.0) else 1 for entry in entries])
 scpowers = np.array ([entry.scpower for entry in entries])

@@ -191,7 +191,7 @@ c vinfall (p306) cm/sec.
 c
 c
 alias  tnchar  "p 87 1"
-alias  cign    "p 375 1."
+alias  cign    "p 375 1.,     p 46 0.15"
 alias  cdep    "p 206 .003,   p 331 1.e+99"
 alias  odep1   "p 6 .02,      p 7 .02,       p 8 .02,        p 11 1.e-8"
 alias  odep2   "p 12 1.e-8,   p 54 10.,      p 55 10.,       p 70 1.e+99"

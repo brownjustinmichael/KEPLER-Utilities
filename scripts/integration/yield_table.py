@@ -1,6 +1,6 @@
 from sys import argv
 
-from kepler_utils.yields.yields import YieldReader, Isotope
+from kepler_utils.yields.yields import YieldReader, Isotope, makeDeluxe
 from kepler_utils.yields.integrator import IMFIntegrator, Integrator
 import astropy.units as u
 import numpy as np
@@ -28,7 +28,7 @@ for mass in masses:
             table = df
         else:
             table = table.append (df, ignore_index = True)
-    indices += [mass + " \Msun Ejecta", mass + " \Msun Winds"]
+    indices += ["Ejecta", "Winds"]
 
 isos = [Isotope (col) for col in table.columns]
 isos.sort ()
@@ -37,4 +37,4 @@ table.columns = [iso.getLabel () for iso in isos]
 table = table.fillna (0.0)
 table.index = indices
 
-print (table.transpose ().to_latex (escape = False))
+print (makeDeluxe (table.transpose ().to_latex (float_format = '{:,.2E}'.format, escape = False), index_label = "Isotope", caption = r"Yields from $\sim$15 \Msun\ and $\sim$25 \Msun\ in \Msun"))

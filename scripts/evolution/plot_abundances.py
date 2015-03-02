@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import matplotlib.pyplot as plt
-import plots.abundances
-import records.dump
+import kepler_utils.plots.abundances
+import kepler_utils.records.dump
 
 import sys
 
@@ -12,12 +12,12 @@ if (len (sys.argv) < 2):
     print ("Usage: plot_abundances dump_file (output_file)")
     exit ()
 
-record = records.dump.DataDump (sys.argv [1], False)
+record = kepler_utils.records.dump.DataDump (sys.argv [1], False)
 
 fig = plt.figure ()
 ax = fig.add_axes ([0.1, 0.1, 0.6, 0.75])
 
-abun = plots.abundances.AbundancePlot (ax, record)
+abun = kepler_utils.plots.abundances.AbundancePlot (ax, record)
 plots = abun.plotAll (10.**-4)
 
 ax.legend (bbox_to_anchor=(1.05, 1.2), loc=2, borderaxespad=1)

@@ -30,54 +30,54 @@ print ((imf + wimf) ((yr + 0.0 * wyr).get_yield ("b10")))
 print (yr.get_yield ("b10"))
 print ((imf + wimf) ((yr + 0.5 * wyr).get_yield ("b10")))
 
-# plots = (0,1,2)
-# elements = False
-# # Initialize the matplotlib figure
-# fig, axes = plt.subplots (len (plots), 1, figsize = (7, 6 * len (plots)), sharey = True)
-# if len (plots) == 1:
-#     axes = (axes,)
-#
-# if elements:
-#     xlim = ((0, 22), (20, 42), (40, 62))
-# else:
-#     xlim = ((10, 42), (40, 92), (90, 172))
-#
-# # Specify the upper and lower limits of integration; beware that non-IMF objects (such as Type Ias) do not have masses in the system and thus will be included regardless of these limits
-# imfUpperLimit = None
-# imfLowerLimit = None
-#
-# # Iterate over the wind contributions
-# first = True
-# for b, ls, marker, color in [(1.0, "-", "o", "g"), (0.5, "--", "s", "r"), (0.0, "-.", "^", "b")]:
-#     if not elements and b != 1.0:
-#         continue
-#
-#     final_imf = imf + wimf
-#     final_yr = yr + b * wyr
-#
-#     a = 0.0
-#
-#     # a, final_imf, final_yr = final_imf.makeSolar ("o16", "fe56", other = typeiaimf, yr = final_yr, other_yr = typeiayr)
-#
-#     print ("Need a fraction of " + str (a) + " to come from massive stars.")
-#
-#     yp = YieldPlot (final_yr, imfIntegrator = final_imf)
-#
-#     for ax, plot in zip (axes, plots):
-#         lines1 = yp.plot (ax, removeIsotopes = ["al26", "k40", "fe60"], ls = ls, names = first, marker = marker, ms = 10, alpha = 0.75, relativeIso = "o16", imfUpperLimit = imfUpperLimit, imfLowerLimit = imfLowerLimit, elements = elements, label = "Exp+" + ("Ia+" if a != 0.0 else "") + "%s*Winds" % b)
-#
-#         ax.set_ylim ((0.03,10))
-#         ax.set_xlim (xlim [plot])
-#
-#         xlabel = ax.get_xlabel ()
-#         ax.set_xlabel ("")
-#
-#     ax.set_xlabel (xlabel)
-#     if elements:
-#         ax.legend (loc = "upper right")
-#
-#     first = False
-#
-# plt.savefig ("full_n20_iso.pdf")
+plots = (0,1,2)
+elements = True
+# Initialize the matplotlib figure
+fig, axes = plt.subplots (len (plots), 1, figsize = (7, 6 * len (plots)), sharey = True)
+if len (plots) == 1:
+    axes = (axes,)
+
+if elements:
+    xlim = ((0, 22), (20, 42), (40, 62))
+else:
+    xlim = ((10, 42), (40, 92), (90, 172))
+
+# Specify the upper and lower limits of integration; beware that non-IMF objects (such as Type Ias) do not have masses in the system and thus will be included regardless of these limits
+imfUpperLimit = None
+imfLowerLimit = None
+
+# Iterate over the wind contributions
+first = True
+for b, ls, marker, color in [(1.0, "-", "o", "g"), (0.5, "--", "s", "r"), (0.0, "-.", "^", "b")]:
+    if not elements and b != 1.0:
+        continue
+
+    final_imf = imf + wimf
+    final_yr = yr + b * wyr
+
+    a = 0.0
+
+    # a, final_imf, final_yr = final_imf.makeSolar ("o16", "fe56", other = typeiaimf, yr = final_yr, other_yr = typeiayr)
+
+    print ("Need a fraction of " + str (a) + " to come from massive stars.")
+
+    yp = YieldPlot (final_yr, imfIntegrator = final_imf)
+
+    for ax, plot in zip (axes, plots):
+        lines1 = yp.plot (ax, removeIsotopes = ["al26", "k40", "fe60"], ls = ls, names = first, marker = marker, ms = 10, alpha = 0.75, relativeIso = "o16", imfUpperLimit = imfUpperLimit, imfLowerLimit = imfLowerLimit, elements = elements, label = "Exp+" + ("Ia+" if a != 0.0 else "") + "%s*Winds" % b)
+
+        ax.set_ylim ((0.03,10))
+        ax.set_xlim (xlim [plot])
+
+        xlabel = ax.get_xlabel ()
+        ax.set_xlabel ("")
+
+    ax.set_xlabel (xlabel)
+    if elements:
+        ax.legend (loc = "upper right")
+
+    first = False
+
+plt.savefig ("full_w18.pdf")
 
 # plt.show ()

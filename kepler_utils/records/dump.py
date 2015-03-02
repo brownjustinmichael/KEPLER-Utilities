@@ -65,7 +65,10 @@ class Isotope(object):
             else:
                 self.z = getattr (periodictable, symbol.title ()).number
             
-        self.string = symbol.lower () + str (mass)
+        if mass != 0:
+            self.string = symbol.lower () + str (mass)
+        else:
+            self.string = string
             
         self.data = {}
         self.label = self.makeLabel (self.string, self.a)

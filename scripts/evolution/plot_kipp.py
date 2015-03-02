@@ -15,8 +15,8 @@ import kepler_utils.plots.shiftlog
 
 # matplotlib.rc ('text', usetex = True)
 
-useModels = False
-logSpace = True
+useModels = True
+logSpace = False
 points = 400
 
 # Read in the KEPLER cnv output file into cnv_record

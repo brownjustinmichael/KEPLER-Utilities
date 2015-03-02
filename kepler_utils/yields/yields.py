@@ -4,6 +4,17 @@ import astropy.units as u
 import numpy as np
 from kepler_utils.records.dump import Isotope
 from pandas import DataFrame
+import pandas as pd
+import re
+
+def makeDeluxe (text, index_label = "", caption = ""):
+    text = text.replace ("tabular", "deluxetable*").replace ("E+", "E$+$").replace ("E-", "E$-$")
+    begin = text.split (r"\toprule") [0]
+    mid = text.split (r"\toprule") [1]
+    end = mid.split (r"\midrule") [1].replace (r"\bottomrule", r"\enddata")
+    mid = mid.split (r"\midrule") [0]
+    mid = " & ".join ([r"\colhead{" + (head.rstrip ("\n\\ ").lstrip ("\n\\ ") if head.rstrip ("\n\\ ").lstrip ("\n\\ ") != "{}" else index_label) + "}" for head in re.split (r"&", mid)])
+    return begin + (r"\tablecaption{" + caption + "}\n" if caption != "" else "") + "\\tablehead{" + mid + "}\n\\startdata" + end
 
 def fromKeplerYield (filename, directory):
     f = open (directory + filename, "r")
