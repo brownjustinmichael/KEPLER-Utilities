@@ -19,7 +19,10 @@ class CNVFile:
     
     This object stores the cnv file as a list of dictionaries, each holding all the cnv file keywords for a given record. Indexing the object indexes that list.
     """
-    def __init__ (self, file_name, max_model = None):
+    
+    def __init__ (self, file_name, max_model = None, verbose = False):
+        if verbose:
+            print ("Reading CNVFile from", file_name)
         self.models = []
         self.units = {}
         self.units ['dt'] = u.s
@@ -42,7 +45,7 @@ class CNVFile:
 #             print ("Found version, filling variables...")
 
             if version != 10500:
-                raise TypeError ("Can't handle version type %i" % self.models ['version'])
+                raise TypeError ("Can't handle version type %i" % version)
             ncyc = self.read_int ()
             timesec = self.read_double ()
             dt = self.read_double ()
@@ -203,6 +206,10 @@ class CNVFile:
                 units = self.units [index]
             else:
                 units = "1"
+            if (type (self.models [0] [index]) == str):
+                return [model [index] for model in self.models]
+            if (type (self.models [0] [index]) == int):
+                return [model [index] for model in self.models]
             x = [u.Quantity (model [index], units) for model in self.models]
             try:
                 x = u.Quantity (x)

@@ -11,7 +11,7 @@ import kepler_utils.jobs.kepler_jobs as kepler_jobs
 
 sets = []
 
-semirange = np.arange (-3,4,1)
+semirange = np.arange (4,6,1)
 oshtrange = np.arange (0.1,1.1,0.1)
 
 for semi in semirange:

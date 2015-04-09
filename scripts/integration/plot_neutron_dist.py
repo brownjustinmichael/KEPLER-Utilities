@@ -7,7 +7,7 @@ import numpy as np
 import astropy.constants as consts
 import matplotlib.pyplot as plt
 
-
+from scipy.interpolate import interp1d
 
 janka_dir = "/Users/justinbrown/Dropbox/Research/Stan/links14/"
 janka_calibrations = ["w15.0", "w18.0", "w20.0", "n20.0"]
@@ -18,7 +18,7 @@ remnant_approximation = "si"
 for calibration in janka_calibrations:
     jp = None
     jps = []
-    janka_files = ["results_low_mass_%s.txt" % calibration, "results_%s.txt" % calibration, "results_heavy_%s.txt" % calibration]
+    janka_files = ["results_%s_revised.txt" % calibration]
     for f in janka_files:
         jps.append (janka.JankaParser.readFrom (janka_dir + f))
         if jp is None:
@@ -33,8 +33,9 @@ for calibration in janka_calibrations:
     wdata = np.genfromtxt ("wcores.dat", names = True)
     w_imf = integrator.IMFIntegrator (wdata ["Minit"])
     w_remnants = wdata [remnant_approximation] * u.solMass
-        
+
     baryonic_masses = u.Quantity (list (w_remnants) + list (jp [":with_fallback:M_mass_cut_after_fb"]))
+    # baryonic_masses = jp [":with_fallback:M_mass_cut_after_fb"]
     
     baryonic_masses [baryonic_masses > 2.5 * u.solMass] = 0. * u.solMass
     integrated_baryonic_mass = (w_imf + janka_imf) (baryonic_masses, mask = baryonic_masses > 0.0 * u.solMass, mask_frequency = True)
@@ -42,20 +43,22 @@ for calibration in janka_calibrations:
     integrated_gravitational_mass = (w_imf + janka_imf) (gravitational_masses, mask = gravitational_masses > 0.0 * u.solMass, mask_frequency = True)
     print ("M_remnant", integrated_baryonic_mass, integrated_gravitational_mass)
     
-    numbers = (w_imf + janka_imf).freq [baryonic_masses > 0.0 * u.solMass]
+    x = np.random.rand (1000000)
+    x = ((1 - x) * max ((w_imf + janka_imf).masses) ** (-1.35) + x * min ((w_imf + janka_imf).masses) ** (-1.35)) ** (1. / -1.35)
+    interpolator = interp1d ((w_imf + janka_imf).masses, baryonic_masses)
+    inter = interpolator (x)
     
     fig, (ax1, ax2) = plt.subplots (2, 1)
     
-    tohist = [x for sublist in [[mass] * int (number) for mass, number in zip (baryonic_masses [baryonic_masses > 0.0 * u.solMass], numbers * 1000)] for x in sublist]
-
-    num, bins, patches = ax1.hist (u.Quantity (tohist), 50, label = calibration)
+    num, bins, patches = ax1.hist (inter [inter > 1.3], 50, label = calibration)
     ax1.set_xlabel ("Baryonic Mass")
     ax1.legend ()
     
-    tohist = [x for sublist in [[mass] * int (number) for mass, number in zip (gravitational_masses [gravitational_masses > 0.0 * u.solMass], numbers * 1000)] for x in sublist]
     ax2.set_xlabel ("Gravitational Mass")
-
-    num, bins, patches = ax2.hist (u.Quantity (tohist), 50, color = "green")
+    
+    interpolator = interp1d ((w_imf + janka_imf).masses, gravitational_masses)
+    inter = interpolator (x)
+    num, bins, patches = ax2.hist (inter [inter > 1.1], 50, color = "green")
     
     plt.tight_layout ()
     plt.savefig (calibration + "_neutron_dist.pdf")

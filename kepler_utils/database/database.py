@@ -4,7 +4,9 @@ import datetime
 import inspect
 import abc
 import hashlib
+import types
 
+import numpy as np
 import astropy.units as u
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -85,7 +87,10 @@ class Cache (object):
         """
         Return the current cache value (with appropriate AstroPy units)
         """
-        return self.value * u.Unit (self.unit)
+        if self.value is not None:
+            return self.value * u.Unit (self.unit)
+        else:
+            return np.nan * u.Unit (self.unit)
         
     @classmethod
     def CacheFactory (cls, name, entrycls, tablename, **kwargs):
@@ -126,6 +131,9 @@ class Cache (object):
                     session.commit ()
             
             # Evaluate the cached function
+            kwargs ["cache"] = kwargs.pop ("cache", True)
+            if function == None:
+                raise ValueError ("Unable to find value in database.")
             result = u.Quantity (function (self.get_data (**kwargs)))
             self.cached.append (self.Cache (name = cache_name, value = result.value, unit = str (result.unit), code = code))
     
@@ -385,6 +393,9 @@ class DumpFileEntry (FileEntry, Base):
         if self.dataobject is None:
             self.dataobject = dataobject
         return self.dataobject
+        
+    def flush (self):
+        self.dataobject = None
 
 @Cache.caching
 class CNVFileEntry (FileEntry, Base):
@@ -404,13 +415,18 @@ class CNVFileEntry (FileEntry, Base):
         entry = CNVFileEntry (file = file, name = name, date = datetime.datetime.fromtimestamp (os.path.getmtime(file)))
         return entry, None, name
         
-    def get_data (self, cache = True):
-        dataobject = CNVFile (self.file)
+    def get_data (self, cache = True, **kwargs):
+        if self.dataobject is not None:
+            return self.dataobject
+        dataobject = CNVFile (self.file, **kwargs)
         if not cache:
             return dataobject
         if self.dataobject == None:
             self.dataobject = dataobject
         return self.dataobject
+        
+    def flush (self):
+        self.dataobject = None
         
     def addToSimulation (self, simulationEntry):
         self.simulation = simulationEntry
@@ -436,5 +452,50 @@ class Tag (Base):
 
 def basicQuery (session):
     return session.query (SimulationEntry, DumpFileEntry).join (DumpFileEntry)
+
+def cache (session, sims, funcs, states = ("presn")):
+    dumps = [[sim.getStateDump (state) for state in states] for sim in sims]
+    
+    results = {}
+    for name in funcs:
+        results [name] = []
+        for run in dumps:
+            results [name].append ([])
+        
+    for i, run in enumerate (dumps):
+        for state, dump in zip (states, run):
+            for name in funcs:
+                results [name] [i].append (dump.cache (session, name + "_" + state, funcs [name]))
+            dump.flush ()
+        for name in results:
+            results [name] [i] = u.Quantity (results [name] [i])
+            
+    for name in results:
+        results [name] = u.Quantity (results [name])
+            
+    return results
+            
+def cnv_cache (session, sims, funcs):
+    if isinstance (sims, sqlalchemy.orm.query.Query):
+        sims = sims.all ()
+        
+    if not isinstance (sims, SimulationEntry):
+        sims = [sim [0] for sim in sims]
+        
+    cnvs = [sim.cnvfiles [0] for sim in sims]
+    
+    results = {}
+    for name in funcs:
+        results [name] = []
+        
+    for cnv in cnvs:
+        for name in funcs:
+            results [name].append (cnv.cache (session, name, funcs [name], verbose = True))
+        cnv.flush ()
+        
+    for name in results:
+        results [name] = u.Quantity (results [name])
+        
+    return results
 
 Base.metadata.create_all (engine)
