@@ -5,9 +5,10 @@ import kepler_utils.plots.abundances
 import kepler_utils.records.dump
 
 import sys
+import math
+import numpy as np
 import astropy.units as u
-
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/s15/s15o1s1#heign")
+import astropy.constants as const
 
 if (len (sys.argv) < 2):
     print ("Usage: plot_abundances dump_file (output_file)")
@@ -20,8 +21,6 @@ ax = fig.add_axes ([0.1, 0.1, 0.6, 0.75])
 
 abun = kepler_utils.plots.abundances.AbundancePlot (ax, record)
 plots = abun.plotAll (10.**-4)
-ax.plot (record ["mass coordinate"].to (u.solMass), (record ["dn"] / 1.e3), label = "D")
-ax.plot (record ["mass coordinate"].to (u.solMass), (record ["etan"]), label = "eta")
 
 ax.legend (bbox_to_anchor=(1.05, 1.2), loc=2, borderaxespad=1)
 

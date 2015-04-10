@@ -34,6 +34,9 @@ def calculate_d_hshell (datadump):
 def calculate_L_hshell (datadump):
     return datadump ["xln"] [np.argmax (datadump ["h1"] > 0.01)]
 
+def calculate_L_h (datadump):
+    return datadump ["xln"] [-np.argmax ((datadump ["snn"] > 0.01 * np.max (datadump ["snn"])) [::-1])]
+
 def calculate_T_center (datadump):
     return datadump ["tn"] [0]
 
@@ -55,9 +58,6 @@ def calculate_he_core (datadump):
 def calculate_he_abun (datadump):
     return datadump ['he4'] [0]
     
-def calculate_lum (datadump):
-    return datadump ['xln'] [-100]
-    
 def calculate_U_core (datadump):
     argmax = np.argmax (datadump ["h1"] > 0.01)
     return np.sum (const.G * datadump ["xm"] [:argmax] * datadump ["mass coordinate"] [:argmax] / (datadump ["rn"] [:argmax]))
@@ -73,7 +73,10 @@ def calculate_U_shell (datadump):
     return const.G * datadump ["mass coordinate"] [argmax] / datadump ["rn"] [argmax]
     
 def calculate_L_edd (datadump):
-    return 4 * math.pi * (const.G * datadump ["mass coordinate"] [-1] + const.k_B / 0.62 / const.m_p * datadump ["rn"] [-1] ** 2 * (datadump ["tn"] [-1] - datadump ["tn"] [-2] + datadump ["tn"] [-1] * (datadump ["dn"] [-1] - datadump ["dn"] [-2]) / datadump ["dn"] [-1]) / (datadump ["rn"] [-1] - datadump ["rn"] [-2])) * const.c / datadump ["xkn"] [-1]
+    ledd = (4 * math.pi * (const.G * datadump ["mass coordinate"] [1:] + const.k_B / 0.62 / const.m_p * datadump ["rn"] [1:] ** 2 * (np.diff (datadump ["tn"]) + datadump ["tn"] [1:] * np.diff (datadump ["dn"]) / datadump ["dn"] [1:]) / np.diff (datadump ["rn"])) * const.c / datadump ["xkn"] [1:]).to (u.solLum)
+
+    return (np.mean (ledd [np.argmax (ledd) - 10:np.argmax (ledd) + 10]))
+
     
 def conv_extent (datadump):
     return datadump ["mass coordinate"] [-10 - np.argmin (datadump ["icon"] [:-10:-1] == "conv")]
@@ -103,80 +106,84 @@ query = query.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "Lo
 # query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "A")))
 # query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "B")))
 # query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "D")))
-query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Blue Loop")))
-query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "C")))
+# query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Blue Loop")))
+# query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "C")))
 query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 < 19.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
 query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
 sims = [sim for sim, entry in query.all ()]
 
+def getTag (tags):
+    for tag in ["A", "B", "C", "D", "Blue Loop"]:
+        if db.Tag.get (session, tag) in tags:
+            return tag
+    return None
+
+colors = {"A": "red", "B": "green", "D": "red", "Blue Loop": "blue", "C": "Green", None: "white"}
+
+tags = [getTag (sim.tags) for sim in sims]
+
 states = ["heign"] + ["%d" % i for i in range (18000, 32000, 2000)] + ["hedep"]
 
-results = db.cache (session, sims, {"T_center": calculate_T_center, "T_hshell": calculate_T_hshell, "L_hshell": calculate_L_hshell, "r_hshell": calculate_r_hshell, "he_core": calculate_he_core, "xlum": calculate_lum, "he_abun": calculate_he_abun, "T_efold_center": calculate_efold_T_center, "T_efold_hshell": calculate_efold_T_hshell, "U_core": calculate_U_core, "U_total": calculate_U, "h_10fold": calculate_h_10fold, "L_edd": calculate_L_edd, "K_total": calculate_K, "K_core": calculate_K_core, "kappa": calculate_kappa, "p_support": calculate_p_support, "L_ratio": calculate_L_ratio}, states)
+results = db.cache (session, sims, {"L_he": calculate_L_hshell, "M_core": calculate_he_core, "U_core": calculate_U_core, "U_total": calculate_U, "h_10fold": calculate_h_10fold, "L_edd": calculate_L_edd, "L_h": calculate_L_h, "r_hshell": calculate_r_hshell}, states)
 
 results ["L_edd"] = results ["L_edd"].to (u.erg / u.s)
-results ["p_support"] = -results ["p_support"]
+results ["L_h"] -= results ["L_he"]
 
-results ["U_env"] = results ["U_total"] - results ["U_core"]
-results.pop ("K_core")
-results.pop ("K_total")
-# results ["K_env"] = results ["K_total"] - results ["K_core"]
-results ["L-L_he"] = results ["xlum"] - results ["L_hshell"]
-# results.pop ("xlum")
-# results.pop ("U_total")
-# results.pop ("L-L_he")
+results.pop ("U_core")
+results.pop ("U_total")
+# results ["U_env"] = results ["U_total"] - results ["U_core"]
 
-# results.pop ("U_core")
-# results.pop ("T_efold_hshell")
-# results.pop ("told")
-results.pop ("he_abun")
-results ["eff"] = math.e ** (0.19 * results ["h_10fold"].to (u.solMass).value) * results ["he_core"] / results ["r_hshell"]
-results.pop ("r_hshell")
-# results.pop ("h_10fold")
-results.pop ("T_hshell")
-# results.pop ("U_env")
-results.pop ("T_efold_center")
-results.pop ("T_center")
+results.pop ("h_10fold")
+results.pop ("L_h")
+results.pop ("L_edd")
 
-#Try radius of 2.5 solar masses, grad_ad
-
-
-
-# as h shell burns outward, t_hshell goes down (why?)
-# Star needs so much radiation (why?) to prevent collapse, so as Hshell luminosity falls, He core luminosity grows
-# collapsing core leads to expanding cool envelope which then convects
-# Halted by degenerate core?
-
-results ["radius"] = np.array ([[sim.getStateDump (state).radius for state in states] for sim in sims]) * u.cm
-results ["mass"] = np.array ([[sim.getStateDump (state).totm for state in states] for sim in sims]) * u.g - results ["he_core"]
-results ["mass loss"] = np.array ([[sim.getStateDump (state).xmlossr for state in states] for sim in sims]) * u.g / u.s
+# results ["radius"] = np.array ([[sim.getStateDump (state).radius for state in states] for sim in sims]) * u.cm
+# results ["L"] = np.array ([[sim.getStateDump (state).xlum for state in states] for sim in sims]) * u.erg / u.s
+# results ["mass"] = np.array ([[sim.getStateDump (state).totm for state in states] for sim in sims]) * u.g
+# results ["mass loss"] = np.array ([[sim.getStateDump (state).xmlossr for state in states] for sim in sims]) * u.g / u.s
 
 results ["osfactors"] = u.Quantity ([u.Quantity ([sim.osfactor] * len (states)) for sim in sims])
 results ["scpowers"] = u.Quantity ([u.Quantity ([sim.scpower] * len (states)) for sim in sims])
+
+# dR = u.Quantity (np.concatenate ([np.diff (results ["radius"]), np.array ([[0]] * len (results ["radius"]))], 1).value, results ["radius"].unit)
+# dL_h = u.Quantity (np.concatenate ([np.diff (results ["L_h"]), np.array ([[0]] * len (results ["L_h"]))], 1).value, results ["L_h"].unit)
+# dL_he = u.Quantity (np.concatenate ([np.diff (results ["L_he"]), np.array ([[0]] * len (results ["L_he"]))], 1).value, results ["L_he"].unit)
+
+# results ["dL/dR"] = (dL_h + dL_he) / dR
+# results ["dL_h/dR"] = (dL_h) / dR
+# results ["dL_he/dR"] = (dL_he) / dR
 
 dfresults = {}
 for name in results:
     dfresults [name] = np.log10 (results [name].flatten ().value)
 
+# dfresults ["dL_h/dR"] = (results ["dL_h"] / results ["dR"]).flatten ()
+# dfresults ["dL_he/dR"] = (results ["dL_he"] / results ["dR"]).flatten ()
+
+# dfresults ["dL/dR"] = results ["dL/dR"].flatten ()
+# dfresults ["dL_h/dR"] = results ["dL_h/dR"].flatten ()
+# dfresults ["dL_he/dR"] = results ["dL_he/dR"].flatten ()
+
 dfresults.pop ("osfactors")
 dfresults.pop ("scpowers")
 
-dfresults ["??"] = results ["xlum"].flatten () - math.pi * 4 * const.G * results ["mass"].flatten () * const.c / u.Quantity (2.2, u.cm ** 2 / u.g)
-
-dfresults ["L_He"] = dfresults ["L_hshell"]
-dfresults.pop ("L_hshell")
+# dfresults ["??"] = results ["xlum"].flatten () - math.pi * 4 * const.G * results ["mass"].flatten () * const.c / u.Quantity (2.2, u.cm ** 2 / u.g)
 
 dfresults ["told"] = np.array ([[(sim.getStateDump (state).told - sim.getStateDump ("heign").told) / (sim.getStateDump ("hedep").told - sim.getStateDump ("heign").told) for state in states] for sim in sims]).flatten ()
 
 mask = dfresults ["told"] > 1.0
+# mask = np.logical_or (mask, np.logical_or (np.abs (((results ["L_h"] + results ["L_he"]) / results ["L"]).flatten () - 1) > 0.2), np.logical_or (dfresults ["L_h"] > 39, dfresults ["L_edd"] > 39)))
+# mask = np.logical_or (mask, np.abs (dfresults ["dL/dR"]) > 2e25 * u.erg / u.s / u.cm)
 
 # dfresults.pop ("told")
+
 for name in dfresults:
     dfresults [name] [mask] = np.nan
 
 df = DataFrame.from_dict (dfresults)
 
-scatter_matrix (df)
+scatter_matrix (df, c = [colors [tag] for tag in tags for state in states])
 
 # fig, axes = plt.subplots (1, 1, sharex = False, figsize = (18, 10))
 #

@@ -493,16 +493,22 @@ class DataDump (Dump):
             self._skip (6 * 16 + 8 + 16 * 6 * self.nuuidhist)
             self._readDoubles (1)
         
-        # TODO Implement log data reader
         if (self.version >= 168450):
             self.nlog = self._readInt ()
             self._readInt ()
-            assert (self.nlog == 0)
+            # assert (self.nlog == 0)
+            if self.nlog != 0:
+                ilog = self._readInts (self.nlog - 1)
+                llog = self._readInts (self.nlog - 1)
+                self._readInt ()
+                for i in range (0, self.nlog - 1):
+                    print (self._readChars (llog [i]))
             self._readDouble ()
         
         # Read energy dissipation due to shear
         self.stardata ['sv'] = numpy.zeros (self.jmsave + 1)
-        self.stardata ['sv'] [1:-2] = self._readDoubles (self.jmsave - 2) 
+        self.stardata ['sv'] [1:-2] = self._readDoubles (self.jmsave - 2)
+        print (self.stardata ['sv'])
         
         # Read out user-defined parameters
         # TODO Implement user-defined parameter reader
