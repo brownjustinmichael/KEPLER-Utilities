@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 wyr = YieldReader (explosions = False)
 wimf = IMFIntegrator (wyr.get_masses ())
 
-yr = YieldReader (directory = "yields/y_data/", masses = np.arange (15.0, 30.0, 0.1) * u.solMass, winds = False)
+yr = YieldReader (directory = "yields/yields_w18/", masses = np.concatenate ([np.arange (9.5, 12.0, 0.5), np.arange (12.0, 30.0, 0.1), np.array ([30., 31., 32., 33., 35., 40., 45., 50., 55., 60., 70., 80., 100., 120.])]) * u.solMass, winds = False)
 imf = IMFIntegrator (yr.get_masses ())
 
 typeiayr = YieldReader (directory = "yields/1a/")

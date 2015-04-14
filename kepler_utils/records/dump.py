@@ -502,13 +502,12 @@ class DataDump (Dump):
                 llog = self._readInts (self.nlog - 1)
                 self._readInt ()
                 for i in range (0, self.nlog - 1):
-                    print (self._readChars (llog [i]))
+                    self._readChars (llog [i])
             self._readDouble ()
         
         # Read energy dissipation due to shear
         self.stardata ['sv'] = numpy.zeros (self.jmsave + 1)
         self.stardata ['sv'] [1:-2] = self._readDoubles (self.jmsave - 2)
-        print (self.stardata ['sv'])
         
         # Read out user-defined parameters
         # TODO Implement user-defined parameter reader

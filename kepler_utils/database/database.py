@@ -18,7 +18,7 @@ from kepler_utils.records.cnv import CNVFile
 Base = declarative_base ()
 
 # Start the database engine with a database called dumpfiles.db in the current directory
-engine = sqlalchemy.create_engine ('sqlite:///' + os.path.join (os.getcwd (), 'dumpfiles.db'), echo = False)
+engine = sqlalchemy.create_engine ('postgresql:///keplerdb', echo = False)
 
 # Create a session class that's bound to the above engine
 Session = sqlalchemy.orm.sessionmaker (bind = engine)
@@ -100,7 +100,7 @@ class Cache (object):
         newclass = type (name, (cls, Base), {"__tablename__": tablename, \
             "file": sqlalchemy.Column (sqlalchemy.String, sqlalchemy.ForeignKey (entrycls.file)), \
             "entry": sqlalchemy.orm.relationship (entrycls, **kwargs), \
-            "__table_args__": (sqlalchemy.UniqueConstraint('name', 'file', name='uix_1'),)})
+            "__table_args__": (sqlalchemy.UniqueConstraint('name', 'file', name='uix_1' + name),)})
         setattr (entrycls, "Cache", newclass)
         return newclass
     
@@ -314,6 +314,9 @@ class FileEntry (object):
         # Create a session
         session = Session ()
         
+        if log_info:
+            print ("Scanning for updates in", directory, "with", glob_string)
+        
         # Go through the database, searching for entries that match the current class and check whether the corresponding file has been deleted
         for entry in session.query (cls).all ():
             if not os.path.isfile (entry.file):
@@ -324,6 +327,8 @@ class FileEntry (object):
         
         # If any files match the glob string in the current directory, send them to update_database
         for file in glob.glob (os.path.join (directory, glob_string)):
+            if log_info:
+                print ("File", file, "matches globstring")
             cls.update_database (session, file, tags, template_name = template_name, log_info = log_info)
             
         # If any files match the glob string in any subdirectories, send them to update_database

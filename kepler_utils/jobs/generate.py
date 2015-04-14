@@ -20,30 +20,33 @@ class Generator (object):
         
     def generate (self, new_file, force = False, query = False, **kwargs):
         parameters = kwargs
-        # parameters = {'scpower' : scpower, 'osfactor' : osfactor}
         
-        for param in parameters:
-            if param [0] == 'p' and param [1:].isnumeric:
-                parameters [param [1:]] = parameters.pop (param)
-        
-        if ('scpower' in parameters or 'scpower' in parameters) and 'woodscon' not in parameters:
-            parameters ['woodscon'] = 1.0
+        # for param in parameters:
+        #     if param [0] == 'p' and param [1:].isnumeric:
+        #         parameters [param [1:]] = parameters.pop (param)
+        #
+        if ('p scpower' in parameters or 'p scpower' in parameters) and 'p woodscon' not in parameters:
+            parameters ['p woodscon'] = 1.0
             
-        if ('osfactor' in parameters or 'osherwig' in parameters) and 'brumoson' not in parameters:
-            parameters ['brumoson'] = 1.0
+        if ('p osfactor' in parameters or 'p osherwig' in parameters) and 'p brumoson' not in parameters:
+            parameters ['p brumoson'] = 1.0
             
-        if ('osherwig' in parameters):
-            parameters ['osfactor'] = 0.0
+        if ('p osherwig' in parameters):
+            parameters ['p osfactor'] = 0.0
         
         if query:
             session = Session ()
             query = session.query (SimulationEntry).filter (SimulationEntry.template_name == self.original).filter (SimulationEntry.template_hash == hashlib.md5 (open (self.original).read ().encode ()).hexdigest ()).filter (SimulationEntry.complete == True)
             for param in parameters:
-                if type (parameters [param]) == float:
-                    query = query.filter (getattr (SimulationEntry, param) > parameters [param] * 0.99)
-                    query = query.filter (getattr (SimulationEntry, param) < parameters [param] * 1.01)
+                if param [0:2] == "p ":
+                    key = param [2:]
                 else:
-                    query = query.filter (getattr (SimulationEntry, param) == parameters [param])
+                    continue
+                if type (parameters [param]) == float:
+                    query = query.filter (getattr (SimulationEntry, key) > parameters [param] * 0.99)
+                    query = query.filter (getattr (SimulationEntry, key) < parameters [param] * 1.01)
+                else:
+                    query = query.filter (getattr (SimulationEntry, key) == parameters [param])
             if query.count () != 0:
                 print ("Simulation already exists")
                 raise TypeError ("Simulation already exists")
@@ -51,10 +54,10 @@ class Generator (object):
             query = session.query (SimulationEntry).filter (SimulationEntry.template_name == self.original).filter (SimulationEntry.template_hash == hashlib.md5 (open (self.original).read ().encode ()).hexdigest ()).filter (SimulationEntry.complete == False)
             for param in parameters:
                 if type (parameters [param]) == float:
-                    query = query.filter (getattr (SimulationEntry, param) > parameters [param] * 0.99)
-                    query = query.filter (getattr (SimulationEntry, param) < parameters [param] * 1.01)
+                    query = query.filter (getattr (SimulationEntry, key) > parameters [param] * 0.99)
+                    query = query.filter (getattr (SimulationEntry, key) < parameters [param] * 1.01)
                 else:
-                    query = query.filter (getattr (SimulationEntry, param) == parameters [param])
+                    query = query.filter (getattr (SimulationEntry, key) == parameters [param])
             for sim in query.all ():
                 for entry in sim.dumpfiles:
                     session.delete (entry)
@@ -74,7 +77,10 @@ class Generator (object):
         file.write (self.content + '\n')
         
         for param in parameters:
-            file.write ("p %s %s\n" % (param, str (parameters [param])))
+            string = str (parameters [param])
+            if isinstance (parameters [param], float):
+                string = "%e" % parameters [param]
+            file.write ("%s %s\n" % (param, string))
             
         file.close ()
         
@@ -97,7 +103,10 @@ class Simulation (object):
                 print ("Dump files would clash with existing files.")
                 raise NameError ("Dump files would clash with existing files")
             else:
-                os.remove (os.path.join (self.run_location, self.name + ".cnv"))
+                try:
+                    os.remove (os.path.join (self.run_location, self.name + ".cnv"))
+                except FileNotFoundError:
+                    pass
                 for file in glob.glob (os.path.join (self.run_location, self.name + "#*")):
                     os.remove (file)
         return subprocess.Popen ([self.command, self.name, self.name + 'g'], cwd = self.run_location)

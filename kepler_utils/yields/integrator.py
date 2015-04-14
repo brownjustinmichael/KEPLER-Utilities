@@ -44,9 +44,9 @@ class Integrator (object):
         yd = {}
         mask = None
         if imfUpperLimit is not None:
-            mask = np.logical_or (yieldReader.get_masses () < imfUpperLimit * 1.01, yieldReader.get_masses () == 0.0 * imfLowerLimit.unit)
+            mask = np.logical_or (yieldReader.get_masses () < imfUpperLimit * 1.01, yieldReader.get_masses () == 0.0 * imfUpperLimit.unit)
         if imfLowerLimit is not None:
-            maskUpper = np.logical_or (yieldReader.get_masses () > imfLowerLimit * 0.99, yieldReader.get_masses () == 0.0 * imfUpperLimit.unit)
+            maskUpper = np.logical_or (yieldReader.get_masses () > imfLowerLimit * 0.99, yieldReader.get_masses () == 0.0 * imfLowerLimit.unit)
             if mask is not None:
                 mask = np.logical_and (mask, maskUpper)
             else:
