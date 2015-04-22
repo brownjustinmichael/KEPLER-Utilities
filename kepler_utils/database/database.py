@@ -466,6 +466,9 @@ def cache (session, sims, funcs, states = ("presn")):
         results [name] = []
         for run in dumps:
             results [name].append ([])
+    
+    if len (dumps) == 0:
+        raise RuntimeError ("No dumps exist in sims")
         
     for i, run in enumerate (dumps):
         for state, dump in zip (states, run):
@@ -474,7 +477,7 @@ def cache (session, sims, funcs, states = ("presn")):
             dump.flush ()
         for name in results:
             results [name] [i] = u.Quantity (results [name] [i])
-            
+    
     for name in results:
         results [name] = u.Quantity (results [name])
             

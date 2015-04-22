@@ -1,6 +1,8 @@
 from setuptools import setup
 import os
 
+scripts = [os.path.join (root, file) for root, subdirs, files in os.walk ("scripts") for file in files if file [0] != '.']
+
 setup(name='kepler_utils',
       version='0.1',
       description='A set of utilities for analyzing and running the stellar evolution code KEPLER',
@@ -10,5 +12,5 @@ setup(name='kepler_utils',
       license='MIT',
       packages=['kepler_utils'],
       install_requires=["matplotlib","sqlalchemy","numpy","astropy","periodictable","fortranfile","pandas","celery"],
-      scripts=[os.path.join (root, file) for root, subdirs, files in os.walk ("scripts") for file in files],
+      scripts=scripts,
       zip_safe=False)

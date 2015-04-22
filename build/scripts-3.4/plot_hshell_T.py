@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/opt/local/bin/python
 
 import math
 
@@ -23,16 +23,16 @@ def numToSize (num):
     return 70 * (-np.log2 (num) + 6)
 
 def calculate_T_hshell (datadump):
-    return datadump ["tn"] [np.argmax (datadump ["h1"] > 0.001)]
+    return datadump ["tn"] [np.argmax (datadump ["h1"] > 0.01)]
 
 def calculate_r_hshell (datadump):
-    return datadump ["rn"] [np.argmax (datadump ["h1"] > 0.001)]
+    return datadump ["rn"] [np.argmax (datadump ["h1"] > 0.01)]
 
 def calculate_d_hshell (datadump):
-    return datadump ["dn"] [np.argmax (datadump ["h1"] > 0.001)]
+    return datadump ["dn"] [np.argmax (datadump ["h1"] > 0.01)]
 
 def calculate_L_hshell (datadump):
-    return datadump ["xln"] [np.argmax (datadump ["h1"] > 0.001)]
+    return datadump ["xln"] [np.argmax (datadump ["h1"] > 0.01)]
 
 def calculate_L_h (datadump):
     return datadump ["xln"] [-np.argmax ((datadump ["snn"] > 0.01 * np.max (datadump ["snn"])) [::-1])]
@@ -44,7 +44,7 @@ def calculate_efold_T_center (datadump):
     return datadump ["mass coordinate"] [np.argmax (datadump ["tn"] < datadump ["tn"] [0] / math.e)]
 
 def calculate_efold_T_hshell (datadump):
-    return datadump ["mass coordinate"] [np.argmax (datadump ["tn"] < calculate_T_hshell (datadump) / math.e)] - datadump ["mass coordinate"] [np.argmax (datadump ["h1"] > 0.001)]
+    return datadump ["mass coordinate"] [np.argmax (datadump ["tn"] < calculate_T_hshell (datadump) / math.e)] - datadump ["mass coordinate"] [np.argmax (datadump ["h1"] > 0.01)]
 
 def calculate_d_center (datadump):
     return datadump ["dn"] [0]
@@ -53,23 +53,23 @@ def calculate_p_center (datadump):
     return datadump ["pn"] [0]
 
 def calculate_he_core (datadump):
-    return datadump ['mass coordinate'] [np.argmax (datadump ['h1'] > 0.001)]
+    return datadump ['mass coordinate'] [np.argmax (datadump ['h1'] > 0.01)]
     
 def calculate_he_abun (datadump):
     return datadump ['he4'] [0]
     
 def calculate_U_core (datadump):
-    argmax = np.argmax (datadump ["h1"] > 0.001)
+    argmax = np.argmax (datadump ["h1"] > 0.01)
     return np.sum (const.G * datadump ["xm"] [:argmax] * datadump ["mass coordinate"] [:argmax] / (datadump ["rn"] [:argmax]))
     
 def calculate_U (datadump):
     return np.sum (const.G * datadump ["xm"] * datadump ["mass coordinate"] / (datadump ["rn"]))
     
 def calculate_h_10fold (datadump):
-    return datadump ["mass coordinate"] [np.argmax (datadump ["h1"] > 0.2)] - datadump ["mass coordinate"] [np.argmax (datadump ["h1"] > 0.001)]
+    return datadump ["mass coordinate"] [np.argmax (datadump ["h1"] > 0.2)] - datadump ["mass coordinate"] [np.argmax (datadump ["h1"] > 0.01)]
     
 def calculate_U_shell (datadump):
-    argmax = np.argmax (datadump ["h1"] > 0.001)
+    argmax = np.argmax (datadump ["h1"] > 0.01)
     return const.G * datadump ["mass coordinate"] [argmax] / datadump ["rn"] [argmax]
     
 def calculate_L_edd (datadump):
@@ -82,7 +82,7 @@ def conv_extent (datadump):
     return datadump ["mass coordinate"] [-10 - np.argmin (datadump ["icon"] [:-10:-1] == "conv")]
     
 def calculate_K_core (datadump):
-    argmax = np.argmax (datadump ["h1"] > 0.001)
+    argmax = np.argmax (datadump ["h1"] > 0.01)
     return np.sum (const.k_B * datadump ["xm"] [:argmax] * datadump ["tn"] [:argmax])
     
 def calculate_K (datadump):
@@ -102,7 +102,6 @@ session = db.Session ()
 # for tag in ["D", "A", "B"]:
 query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
 query = query.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "Low dtcp")))
-query = query.filter (db.SimulationEntry.name == "s15t.44")
 # query = query.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, tag)))
 # query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "A")))
 # query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "B")))
@@ -135,17 +134,14 @@ results.pop ("U_core")
 results.pop ("U_total")
 # results ["U_env"] = results ["U_total"] - results ["U_core"]
 
-# results.pop ("h_10fold")
-# results.pop ("L_h")
-# results.pop ("L_edd")
+results.pop ("h_10fold")
+results.pop ("L_h")
+results.pop ("L_edd")
 
-results ["radius"] = np.array ([[sim.getStateDump (state).radius for state in states] for sim in sims]) * u.cm
-results ["L"] = np.array ([[sim.getStateDump (state).xlum for state in states] for sim in sims]) * u.erg / u.s
-results ["mass"] = np.array ([[sim.getStateDump (state).totm for state in states] for sim in sims]) * u.g
+# results ["radius"] = np.array ([[sim.getStateDump (state).radius for state in states] for sim in sims]) * u.cm
+# results ["L"] = np.array ([[sim.getStateDump (state).xlum for state in states] for sim in sims]) * u.erg / u.s
+# results ["mass"] = np.array ([[sim.getStateDump (state).totm for state in states] for sim in sims]) * u.g
 # results ["mass loss"] = np.array ([[sim.getStateDump (state).xmlossr for state in states] for sim in sims]) * u.g / u.s
-
-print (sims)
-print ([sims [0].osfactor] * len (states))
 
 results ["osfactors"] = u.Quantity ([u.Quantity ([sim.osfactor] * len (states)) for sim in sims])
 results ["scpowers"] = u.Quantity ([u.Quantity ([sim.scpower] * len (states)) for sim in sims])
@@ -169,6 +165,9 @@ for name in results:
 # dfresults ["dL_h/dR"] = results ["dL_h/dR"].flatten ()
 # dfresults ["dL_he/dR"] = results ["dL_he/dR"].flatten ()
 
+dfresults.pop ("osfactors")
+dfresults.pop ("scpowers")
+
 # dfresults ["??"] = results ["xlum"].flatten () - math.pi * 4 * const.G * results ["mass"].flatten () * const.c / u.Quantity (2.2, u.cm ** 2 / u.g)
 
 dfresults ["told"] = np.array ([[(sim.getStateDump (state).told - sim.getStateDump ("heign").told) / (sim.getStateDump ("hedep").told - sim.getStateDump ("heign").told) for state in states] for sim in sims]).flatten ()
@@ -177,16 +176,14 @@ mask = dfresults ["told"] > 1.0
 # mask = np.logical_or (mask, np.logical_or (np.abs (((results ["L_h"] + results ["L_he"]) / results ["L"]).flatten () - 1) > 0.2), np.logical_or (dfresults ["L_h"] > 39, dfresults ["L_edd"] > 39)))
 # mask = np.logical_or (mask, np.abs (dfresults ["dL/dR"]) > 2e25 * u.erg / u.s / u.cm)
 
-dfresults.pop ("told")
-dfresults.pop ("scpowers")
-dfresults.pop ("osfactors")
+# dfresults.pop ("told")
 
 for name in dfresults:
     dfresults [name] [mask] = np.nan
 
 df = DataFrame.from_dict (dfresults)
 
-scatter_matrix (df)
+scatter_matrix (df, c = [colors [tag] for tag in tags for state in states])
 
 # fig, axes = plt.subplots (1, 1, sharex = False, figsize = (18, 10))
 #

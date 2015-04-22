@@ -53,6 +53,10 @@ class Generator (object):
                 
             query = session.query (SimulationEntry).filter (SimulationEntry.template_name == self.original).filter (SimulationEntry.template_hash == hashlib.md5 (open (self.original).read ().encode ()).hexdigest ()).filter (SimulationEntry.complete == False)
             for param in parameters:
+                if param [0:2] == "p ":
+                    key = param [2:]
+                else:
+                    continue
                 if type (parameters [param]) == float:
                     query = query.filter (getattr (SimulationEntry, key) > parameters [param] * 0.99)
                     query = query.filter (getattr (SimulationEntry, key) < parameters [param] * 1.01)

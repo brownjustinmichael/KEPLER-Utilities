@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/opt/local/bin/python
 
 import sys
 import argparse
@@ -19,15 +19,14 @@ import kepler_utils.plots.shiftlog
 parser = argparse.ArgumentParser ()
 parser.add_argument ('input_file', default = None)
 parser.add_argument ('--output', default = None)
-parser.add_argument ('--useModels', dest = 'models', action = 'store_true')
-parser.set_defaults (models = False)
+parser.add_argument ('--useModels', default = False)
 parser.add_argument ('--logSpace', default = None)
 parser.add_argument ('--points', default = 400)
 
 namespace = parser.parse_args ()
 
 if namespace.logSpace is None:
-    namespace.logSpace = not namespace.models
+    namespace.logSpace = not namespace.useModels
 
 cnv_record = kepler_utils.records.cnv.CNVFile (namespace.input_file)
 
@@ -36,7 +35,7 @@ fig = plt.figure (figsize = (18,10))
 ax = plt.subplot (111)
 
 # Initialize the KippenhahnPlot object with the given axis and record file
-kippplot = kepler_utils.plots.kipp.KippenhahnPlot (ax, cnv_record, useModels = namespace.models)
+kippplot = kepler_utils.plots.kipp.KippenhahnPlot (ax, cnv_record, useModels = namespace.useModels)
 
 energy, = kippplot.plotEnergy (logspace = namespace.logSpace, points = namespace.points)
 cb = kippplot.addEnergyColorBar (energy)
