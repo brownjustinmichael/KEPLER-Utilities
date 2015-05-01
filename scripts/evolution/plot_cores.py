@@ -19,13 +19,14 @@ from kepler_utils.plots.abundances import jTDPlot
 def numToSize (num):
     return 70 * (-np.log2 (num) + 6)
 
+plt.style.use("presentation")
+
 session = db.Session ()
 
 query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
 query = query.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "Low dtcp")))
-query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "C")))
-query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Blue Loop")))
 query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.).filter (db.DumpFileEntry.binm10 < 19.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
+# query = query.filter (db.DumpFileEntry.scpower < 1.0)
 query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
 
 entries = [entry for sim, entry in query.all ()]
@@ -41,7 +42,7 @@ earlyhecores = u.Quantity ([sim.getStateDump ("heign").cache (session, 'early_he
 prehcontain = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'early_h_contained', cache.calculate_h_contained) for sim in sims])
 earlyhcontain = u.Quantity ([sim.getStateDump ("heign").cache (session, 'early_h_contained', cache.calculate_h_contained) for sim in sims])
 cocores = u.Quantity ([entry.cache (session, 'co_core', cache.calculate_co_core) for entry in entries])
-coratio = u.Quantity ([sim.getStateDump ("hedep").cache (session, 'co_ratio', cache.calculate_co_ratio_in_core) for sim in sims])
+coratio = u.Quantity ([sim.getStateDump ("cign").cache (session, 'co_ratio', cache.calculate_co_ratio_in_core) for sim in sims])
 compactness = u.Quantity ([entry.cache (session, 'compactness', cache.calculate_compactness_2_5) for entry in entries])
 fecores = u.Quantity ([entry.cache (session, 'fe_core', cache.calculate_fe_core) for entry in entries])
 
@@ -50,7 +51,7 @@ lines = [0 if db.Tag.get (session, "Low dtcp") in sim.tags else 3 for sim in sim
 osfactors = np.array ([entry.osfactor if (entry.brumoson > 0.0) else 1 for entry in entries])
 scpowers = np.array ([entry.scpower for entry in entries])
 
-fig, axes = plt.subplots (2, 2, sharex = False, figsize = (18, 10))
+fig, axes = plt.subplots (1, 1, sharex = False, figsize = (10, 8))
 
 scs = []
 
@@ -60,39 +61,48 @@ colors = osfactors
 sizes = numToSize (scpowers)
 
 # Plot 1
-ax = axes [0] [0]
-ax.set_ylabel ("C/O")
-scs.append (ax.scatter (x1, cocores.to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75, vmin = 0.1, vmax = 1.0))
-ax.set_ylim ((2., 4.1))
+ax = axes
+ax.set_ylabel ("C/O Ratio in C/O Core")
+scs.append (ax.scatter (x1, coratio, c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75, vmin = 0.1, vmax = 1.0))
+# ax.set_ylim ((2., 4.1))
 ax.set_xlim ((4.0, 5.5))
 
-# Plot 2
-ax = axes [0] [1]
-ax.set_ylabel ("C/O in C/O Core")
-scs.append (ax.scatter (x2, coratio, c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75, vmin = 0.1, vmax = 1.0))
-ax.set_ylim ((0.1, 0.7))
-ax.set_xlim ((4.0, 5.5))
+# # Plot 2
+# ax = axes [0] [1]
+# ax.set_ylabel ("C/O in C/O Core")
+# scs.append (ax.scatter (x2, coratio, c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75, vmin = 0.1, vmax = 1.0))
+# ax.set_ylim ((0.1, 0.7))
+# ax.set_xlim ((4.0, 5.5))
+#
+# # Plot 3
+# ax = axes [1] [0]
+# ax.set_ylabel ("Compactness")
+#
+# scs.append (ax.scatter (x1, compactness, c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75, vmin = 0.1, vmax = 1.0))
+# ax.set_ylim ((0, 0.3))
+# ax.set_xlim ((4.0, 5.5))
+#
+# ax.set_xlabel ("Core Mass")
+#
+# # Plot 4
+# ax = axes [1] [1]
+# ax.set_ylabel ("Fe Core")
+# # ax.plot (x2, x2)
+# scs.append (ax.scatter (x2, fecores.to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75, vmin = 0.1, vmax = 1.0))
+# ax.set_ylim ((1.2, 1.7))
+# ax.set_xlim ((4.0, 5.5))
+# # ax.set_yscale ("log")
 
-# Plot 3
-ax = axes [1] [0]
-ax.set_ylabel ("Compactness")
+ax.set_xlabel ("He Core Mass")
 
-scs.append (ax.scatter (x1, compactness, c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75, vmin = 0.1, vmax = 1.0))
-ax.set_ylim ((0, 0.3))
-ax.set_xlim ((4.0, 5.5))
+plt.tight_layout ()
 
-ax.set_xlabel ("Core Mass")
+fig.subplots_adjust (right = 0.8, hspace = 0)
+cbar_ax = fig.add_axes ([0.85, 0.15, 0.05, 0.7])
+cb = fig.colorbar (scs [0], cax = cbar_ax)
+cb.set_label ("Overshoot Factor")
 
-# Plot 4
-ax = axes [1] [1]
-ax.set_ylabel ("Fe Core")
-# ax.plot (x2, x2)
-scs.append (ax.scatter (x2, fecores.to (u.solMass), c = colors, s = sizes, linewidths = lines, picker = True, alpha = 0.75, vmin = 0.1, vmax = 1.0))
-ax.set_ylim ((1.2, 1.7))
-ax.set_xlim ((4.0, 5.5))
-# ax.set_yscale ("log")
-
-ax.set_xlabel ("Core Mass")
+plt.savefig ("co_ratio.png")
 
 figs = {}
 cnv_lines = {}
@@ -161,11 +171,6 @@ def onpick (event):
         newfig.canvas.mpl_connect('button_press_event', onclick)
 
     plt.show ()
-
-fig.subplots_adjust (right = 0.8, hspace = 0)
-cbar_ax = fig.add_axes ([0.85, 0.15, 0.05, 0.7])
-cb = fig.colorbar (scs [0], cax = cbar_ax)
-cb.set_label ("Overshoot Factor")
 
 # ls = []
 # powers = []

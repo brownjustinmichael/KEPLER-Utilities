@@ -2,28 +2,31 @@
 
 import sys
 from math import pi
+import argparse
 
 import matplotlib.pyplot as plt
 import numpy as np
 import astropy.units as u
 from astropy.constants import sigma_sb
 
-import records.cnv as cnv
+import kepler_utils.records.cnv as cnv
 
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87a.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87s2.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87s1.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87h.3.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87s-1.cnv")
-# sys.argv.append ("/Users/justinbrown/Codes/kepler/run/87a/87s-2.cnv")
-# sys.argv.append ("none")
+parser = argparse.ArgumentParser ()
+parser.add_argument ('input_file', default = None)
+parser.add_argument ('--output', default = None)
+parser.add_argument ('--style', default = None)
+
+namespace = parser.parse_args ()
+
+if namespace.style is not None:
+    plt.style.use(namespace.style)
 
 # Read in the KEPLER cnv output file into cnv_record
 if (len (sys.argv) < 2):
     print ("Usage: plot_hr cnv_file (output_file)")
     exit ()
 
-records = [cnv.CNVFile (arg) for arg in sys.argv [1:-1]]
+records = [cnv.CNVFile (namespace.input_file)]
 
 fig = plt.figure ()
 ax = plt.subplot (111)
@@ -41,7 +44,7 @@ for cnv_record in records:
         if times [i] > timezero + timediff:
             timezero = times [i]
             points.append (i)
-    ax.plot (temp [points [0]:].to (u.K), lum.to (u.solLum) [points [0]:])
+    ax.plot (temp [points].to (u.K), lum.to (u.solLum) [points])
     colors = (-times.to (u.year) [points] + times.to (u.year) [-1]) / u.year
     colors [colors < 0.1] = 0.1
     ax.scatter (temp [points].to (u.K), lum.to (u.solLum) [points], c = np.log (colors), s = 40, lw = 0.0)
@@ -53,8 +56,9 @@ ax.set_yscale ('log')
 ax.set_xlabel ("$T_\mathrm{eff}$ (K)")
 ax.set_ylabel ("$L$ (solar luminosities)")
 
-# if (len (sys.argv) > 2):
-    # plt.savefig (sys.argv [2])
-# else:
-    # Plot the result
-plt.show ()
+plt.tight_layout ()
+
+if (namespace.output is not None):
+    plt.savefig (namespace.output)
+else:
+    plt.show ()

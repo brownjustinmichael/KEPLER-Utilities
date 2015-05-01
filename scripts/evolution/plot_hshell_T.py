@@ -77,6 +77,8 @@ def calculate_L_edd (datadump):
 
     return (np.mean (ledd [np.argmax (ledd) - 10:np.argmax (ledd) + 10]))
 
+def calculate_hshell_abun (datadump):
+    return (1.0 * u.solMass).to (u.g) / (datadump ["mass coordinate"] [np.argmax (np.cumsum (datadump ["xm"] * datadump ["h1"]) > 1.0 * u.solMass)] - datadump ["mass coordinate"] [np.argmax (datadump ["h1"] > 0.001)])
     
 def conv_extent (datadump):
     return datadump ["mass coordinate"] [-10 - np.argmin (datadump ["icon"] [:-10:-1] == "conv")]
@@ -102,7 +104,7 @@ session = db.Session ()
 # for tag in ["D", "A", "B"]:
 query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
 query = query.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "Low dtcp")))
-query = query.filter (db.SimulationEntry.name == "s15t.44")
+# query = query.filter (db.SimulationEntry.name == "s15t.44")
 # query = query.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, tag)))
 # query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "A")))
 # query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "B")))
@@ -126,7 +128,7 @@ tags = [getTag (sim.tags) for sim in sims]
 
 states = ["heign"] + ["%d" % i for i in range (18000, 32000, 2000)] + ["hedep"]
 
-results = db.cache (session, sims, {"L_he": calculate_L_hshell, "M_core": calculate_he_core, "U_core": calculate_U_core, "U_total": calculate_U, "h_10fold": calculate_h_10fold, "L_edd": calculate_L_edd, "L_h": calculate_L_h, "r_hshell": calculate_r_hshell}, states)
+results = db.cache (session, sims, {"L_he": calculate_L_hshell, "M_core": calculate_he_core, "U_core": calculate_U_core, "U_total": calculate_U, "h_10fold": calculate_h_10fold, "L_edd": calculate_L_edd, "L_h": calculate_L_h, "r_hshell": calculate_r_hshell, "habun": calculate_hshell_abun}, states)
 
 results ["L_edd"] = results ["L_edd"].to (u.erg / u.s)
 results ["L_h"] -= results ["L_he"]
@@ -143,9 +145,6 @@ results ["radius"] = np.array ([[sim.getStateDump (state).radius for state in st
 results ["L"] = np.array ([[sim.getStateDump (state).xlum for state in states] for sim in sims]) * u.erg / u.s
 results ["mass"] = np.array ([[sim.getStateDump (state).totm for state in states] for sim in sims]) * u.g
 # results ["mass loss"] = np.array ([[sim.getStateDump (state).xmlossr for state in states] for sim in sims]) * u.g / u.s
-
-print (sims)
-print ([sims [0].osfactor] * len (states))
 
 results ["osfactors"] = u.Quantity ([u.Quantity ([sim.osfactor] * len (states)) for sim in sims])
 results ["scpowers"] = u.Quantity ([u.Quantity ([sim.scpower] * len (states)) for sim in sims])

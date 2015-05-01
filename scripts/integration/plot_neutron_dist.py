@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from scipy.interpolate import interp1d
 
-janka_dir = "/Users/justinbrown/Dropbox/Research/Stan/links14/"
+janka_dir = "/Users/justinbrown/Dropbox/Research/Stan/Nucleosynthesis/links14/"
 janka_calibrations = ["w15.0", "w18.0", "w20.0", "n20.0"]
 
 lower_sn_limit = 8

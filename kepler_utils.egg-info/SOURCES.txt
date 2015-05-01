@@ -32,5 +32,4 @@ scripts/evolution/plot_profile.py
 scripts/integration/.DS_Store
 scripts/integration/plot_integration.py
 scripts/integration/plot_neutron_dist.py
-scripts/integration/plot_w18_integration.py
 scripts/integration/yield_table.py

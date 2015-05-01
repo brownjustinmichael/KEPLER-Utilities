@@ -15,16 +15,16 @@ generator = os.path.join(os.path.dirname(os.path.realpath(kepler_utils.__file__)
 command = "/Users/justinbrown/Codes/kepler/gfortran/keplery"
 run_location = "/Users/justinbrown/Dropbox/Research/Stan/kepler/env"
 
-l = 10. ** 38.3
-mc = 10. ** 33.90 * u.g - 1.0 * u.solMass
-m = 15 * u.solMass
-r = 10. ** 10.1
+l = 10. ** 38.0
+mc = 10. ** 33.75 * u.g
+m = 10.**34.5 * u.g
+r = 10. ** 10.4
 n = 0
-name = "s15ea%03d" % 23
+name = "s15ea%03d" % 27
 
 file = open ("env/" + str (n) + "comp", "w")
 
-ninner = 400
+ninner = 0
 
 for i in range (n + ninner, ninner, -1):
     file.write ("copycomp 1\n")
@@ -44,5 +44,5 @@ for i in range (ninner, 0, -1):
 # file.write ("newe\n")
 file.close ()
 
-kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': False, 'query': True, 'p izonezms': 0, 'p q1faczms': 1000.0, 'p nstop': 10000, 'p radius0': r, 'p xlum0': l, 'p summ0': mc.to (u.g).value, 'p timezms': 1.0e-5, 'p tstop': 3.15e13, 'p ipup': 0, 'rescalem': str ((m - mc).to (u.solMass).value) + " mult", 'alias zams': "\"link \'%s\'\"" % (str (n) + "comp"), 'tags': ["Envelope", "NGrad = " + str (n), "Test"], "query": True, "goal": "final"}, queue = 'priority')
+kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': False, 'query': True, 'p izonezms': 0, 'p q1faczms': 1000.0, 'p nstop': 10000, 'p radius0': r, 'p xlum0': l, 'p summ0': mc.to (u.g).value, 'p timezms': 1.0e-5, 'p tstop': 3.15e13, 'p ipup': 1, 'rescalem': str ((m - mc).to (u.solMass).value) + " mult", 'alias zams': "\"link \'%s\'\"" % (str (n) + "comp"), 'tags': ["Envelope", "NGrad = " + str (n), "Test"], "query": True, "goal": "final"}, queue = 'priority')
 

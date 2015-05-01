@@ -32,10 +32,10 @@ osfactors = np.arange (0.1, 1.1, 0.1)
 scpowers = 2.0 ** np.arange (-3, 6, 1)
 
 query = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
-query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Blue Loop")))
+# query = query.filter (~db.SimulationEntry.tags.contains (db.Tag.get (session, "Blue Loop")))
 query = query.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "Low dtcp")))
 query = query.filter (db.DumpFileEntry.binm10 < 19.0)#.filter (db.DumpFileEntry.binm10 > 19.0)
-query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
+query = query.filter (db.DumpFileEntry.state == 'heign').filter (db.SimulationEntry.cnvfiles.any ())
 results = [filter_ossc (query, osfactor).order_by (db.DumpFileEntry.scpower).all () for osfactor in osfactors]
 
 result = []
@@ -68,8 +68,8 @@ coratio = np.array ([[entry.cache (session, 'co_ratio', cache.calculate_co_ratio
 compactness = np.array ([[entry.cache (session, 'compactness', cache.calculate_compactness_2_5) if entry is not None else np.nan for entry in array] for array in entries])
 fecores = np.array ([[entry.cache (session, 'fe_core', cache.calculate_fe_core).to (u.solMass).value if entry is not None else np.nan for entry in array] for array in entries])
 
-axis_0 = 0
-axis_1 = 1
+axis_0 = 1
+axis_1 = 0
 data = {}
 
 for d, label in [(hecores, "he"), (prehecores, "phe"), (earlyhcontain, "eh"), (prehcontain, "ph"), (cocores, "co"), (coratio, "c/o"), (compactness, "com"), (fecores, "fe")]:
@@ -92,12 +92,12 @@ if axis_1 == 0:
     x = np.mean (scpowers, axis_1)
 else:
     x = np.mean (osfactors, axis_1)
-for ax, d, label in zip (axes.flat, [data ["co"], data ["c/o"], data ["com"], data ["fe"]], ["C/O Core", "C/O", "Compactness", "Fe Core"]):
+for ax, d, label in zip (axes.flat, [data ["he"], data ["c/o"], data ["com"], data ["fe"]], ["C/O Core", "C/O", "Compactness", "Fe Core"]):
     ax.set_ylabel (label)
     scs.append (ax.scatter (x, d [0,:], s = numToSize (np.mean (scpowers, axis_1)), c = np.mean (osfactors, axis_1), picker = True, alpha = 0.75))
     ax.errorbar (x, d [0,:], yerr = d [1,:])
-    if axis_1 == 0:
-        ax.set_xscale ("log")
+    # if axis_1 == 0:
+        # ax.set_xscale ("log")
 
 for ax in axes [-1]:
     if axis_1 == 0:

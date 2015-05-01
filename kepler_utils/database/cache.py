@@ -103,3 +103,6 @@ def env_overshoot (datadump):
     for j in range (0, len (regions [q]) - i):
         frac -= 0.5 * (datadump ['rn'] [ri + j + 1] - datadump ['rn'] [ri + j - 1]) / (0.5 * (datadump ['pn'] [ri + j] + datadump ['pn'] [ri + j - 1]) / (datadump ['pn'] [ri + j] - datadump ['pn'] [ri + j - 1]) * (datadump ['rn'] [ri + j] - datadump ['rn'] [ri + j - 1]))
     return frac
+    
+def calculate_L_ratio (datadump):
+    return np.max (datadump ["xln"]) / datadump ["xln"] [-1]

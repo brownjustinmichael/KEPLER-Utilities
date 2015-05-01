@@ -10,6 +10,11 @@ import numpy as np
 import astropy.units as u
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql import func
+from sqlalchemy.sql.elements import ColumnElement
+from sqlalchemy.orm.attributes import QueryableAttribute
+from sqlalchemy.sql.functions import FunctionElement
 
 from kepler_utils.records.dump import pfile, qfile, Dump, DataDump
 from kepler_utils.records.cnv import CNVFile
@@ -119,10 +124,10 @@ class Cache (object):
                 code = ''.join (inspect.getsourcelines (function) [0])
             except TypeError:
                 code = 'unable to read'
-    
+                
             # Check if the cached function already exists in the current cache
             for cache in self.cached:
-                if cache.name == cache_name and cache.code == code:
+                if cache.name == cache_name and (cache.code == code or function is None):
                     # If it exists, return the value
                     return cache.get_value ()
                 elif cache.name == cache_name and cache.code != code:
@@ -200,6 +205,39 @@ class SimulationEntry (Base):
         if tag not in self.tags:
             self.tags.append (tag)
         session.commit ()
+        
+    @classmethod
+    def contains (cls, session, tag):
+        return cls.tags.contains (Tag.get (session, tag))
+        
+    def getParamArray (self, param, start = None, end = None, exclude = None):
+        exclude = [] if exclude is None else exclude
+        if start is None:
+            start = 0
+        if end is None:
+            end = self.nstop
+        if isinstance (start, str):
+            start = self.getStateDump (start).ncyc
+        if isinstance (end, str):
+            end = self.getStateDump (end).ncyc
+        ns = [(dump, dump.ncyc) for dump in self.dumpfiles if (end >= dump.ncyc >= start and dump.state not in exclude)]
+        dumps = sorted (ns, key = lambda x: x [1])
+        return np.array ([getattr (dump, param) for dump, n in dumps])
+    
+    def getCachedArray (self, cache, function = None, start = None, end = None, exclude = None):
+        exclude = [] if exclude is None else exclude
+        if start is None:
+            start = 0
+        if end is None:
+            end = self.nstop
+        if isinstance (start, str):
+            start = self.getStateDump (start).ncyc
+        if isinstance (end, str):
+            end = self.getStateDump (end).ncyc
+        ns = [(dump, dump.ncyc) for dump in self.dumpfiles if (end >= dump.ncyc >= start and dump.state not in exclude)]
+        session = Session.object_session (self)
+        dumps = sorted (ns, key = lambda x: x [1])
+        return u.Quantity ([dump.cache (session, cache, function) for dump, n in dumps])
 
 class FileEntry (object):
     """
@@ -347,7 +385,22 @@ class FileEntry (object):
             raise TypeError ("Failed to commit")
         finally:
             session.close ()
-
+    
+    @classmethod
+    def cacheQuery (cls, name, query, function = None, label = None):
+        if isinstance (name, ColumnElement) or isinstance (name, QueryableAttribute) or isinstance (name, FunctionElement):
+            col = name
+        else:
+            try:
+                col = getattr (cls, name)
+            except AttributeError:
+                thisAlias = aliased (cls.Cache)
+                query = query.join (thisAlias).filter (thisAlias.name == name)
+                col = (thisAlias.value)
+        if function is not None:
+            col = getattr (func, function) (col)
+        return query.add_columns (col.label (name if label is None else label))
+        
 @setup_parameters (pfile)
 @setup_parameters (qfile)
 @Cache.caching
@@ -473,7 +526,7 @@ def cache (session, sims, funcs, states = ("presn")):
     for i, run in enumerate (dumps):
         for state, dump in zip (states, run):
             for name in funcs:
-                results [name] [i].append (dump.cache (session, name + "_" + state, funcs [name]))
+                results [name] [i].append (dump.cache (session, name, funcs [name]))
             dump.flush ()
         for name in results:
             results [name] [i] = u.Quantity (results [name] [i])

@@ -15,7 +15,7 @@ c include ise and nse networks (networks #2 and #3)
 isenet
 c
 c solar abundances (weight %): (lod03)
-m  sol     71.10   h1    7.55e-3  he3    27.40   he4    0.2490   c12
+m  sol     71.10   h1    0.0  he3    27.40   he4    0.2490   c12
 m  sol    0.0799  n14    0.6618   o16   0.1306   ne20   0.07914  mg24
 m  sol  8.294e-2 si28    4.233e-2 s32   1.131e-2 ar36   7.381e-3 ca40
 m  sol  3.828e-4 ti44   3.429e-3  cr48   0.0     fe52   0.1461   fe54

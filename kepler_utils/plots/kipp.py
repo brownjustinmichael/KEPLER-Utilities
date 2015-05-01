@@ -63,17 +63,6 @@ class PolyCollectionHandler (matplotlib.legend_handler.HandlerBase):
         return [patch]
 
 Legend.update_default_handler_map({matplotlib.collections.PolyCollection: PolyCollectionHandler()})
-
-class Equal:
-    def __init__ (self, value1, value2 = None):
-        self.value1 = value1
-        self.value2 = value2
-    
-    def __call__ (self, value):
-        if value == self.value1 or (self.value2 != None and value == self.value2):
-            return True
-        else:
-            return False
             
 class KippenhahnPlot(object):
     """This object takes a matplotlib axis and attaches a Kippenhahn plot to it associated with the given CNVFile"""

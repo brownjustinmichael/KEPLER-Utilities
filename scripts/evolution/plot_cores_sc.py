@@ -9,27 +9,27 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 import sqlalchemy
 
-import records.cnv
-import database.database as db
-import database.cache
-import plots.kipp
-import plots.abundances
+import kepler_utils.records.cnv
+import kepler_utils.database.database as db
+import kepler_utils.database.cache as cache
+import kepler_utils.plots.kipp
+import kepler_utils.plots.abundances
 
 def numToSize (num):
     return 100 * (-np.log2 (num) + 3.5)
 
 session = db.Session ()
 
-query = db.basicQuery (session).filter (db.SimulationEntry.binm10 > 16.0)#.filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")))
-query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.)
+query = db.basicQuery (session).filter (db.DumpFileEntry.binm10 < 16.0).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")), db.SimulationEntry.tags.contains (db.Tag.get (session, "Low dtcp")))
+# query = query.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.)
 query = query.filter (db.DumpFileEntry.osfactor >= 0.49).filter (db.DumpFileEntry.osfactor <= .51)
 query = query.filter (db.DumpFileEntry.scpower >= 0.9).filter (db.DumpFileEntry.scpower <= 1.1)
-query = query.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
+query = query.filter (db.DumpFileEntry.state == 'heign').filter (db.SimulationEntry.cnvfiles.any ())
 
-allquery = db.basicQuery (session).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid"))).filter (db.SimulationEntry.binm10 > 16.0)
+allquery = db.basicQuery (session).filter (db.DumpFileEntry.binm10 < 16.0).filter (db.SimulationEntry.tags.contains (db.Tag.get (session, "OS/SC Grid")), db.SimulationEntry.tags.contains (db.Tag.get (session, "Low dtcp")))
 allquery = allquery.filter (db.DumpFileEntry.brumoson > 0.).filter (db.DumpFileEntry.woodscon > 0.)
 allquery = allquery.filter (db.DumpFileEntry.osfactor > 0.0).filter (db.DumpFileEntry.scpower > 0.0)
-allquery = allquery.filter (db.DumpFileEntry.state == 'presn').filter (db.SimulationEntry.cnvfiles.any ())
+allquery = allquery.filter (db.DumpFileEntry.state == 'heign').filter (db.SimulationEntry.cnvfiles.any ())
 
 entries = [entry for sim, entry in query.all ()]
 sims = [sim for sim, entry in query.all ()]
@@ -40,15 +40,15 @@ allsims = [sim for sim, entry in allquery.all ()]
 if len (entries) == 0:
     raise ValueError ("No entries in query")
     
-hecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in entries])
-earlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in sims])
-cocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in entries])
+hecores = u.Quantity ([entry.cache (session, 'he_core', cache.calculate_he_core) for entry in entries])
+earlyhecores = u.Quantity ([sim.getStateDump ("heign").cache (session, 'he_core', cache.calculate_he_core) for sim in sims])
+cocores = u.Quantity ([entry.cache (session, 'co_core', cache.calculate_co_core) for entry in entries])
 
-allhecores = u.Quantity ([entry.cache (session, 'he_core', database.cache.calculate_he_core) for entry in allentries])
-allearlyhecores = u.Quantity ([sim.getStateDump ("hdep").cache (session, 'he_core', database.cache.calculate_he_core) for sim in allsims])
-allcocores = u.Quantity ([entry.cache (session, 'co_core', database.cache.calculate_co_core) for entry in allentries])
+allhecores = u.Quantity ([entry.cache (session, 'he_core', cache.calculate_he_core) for entry in allentries])
+allearlyhecores = u.Quantity ([sim.getStateDump ("heign").cache (session, 'he_core', cache.calculate_he_core) for sim in allsims])
+allcocores = u.Quantity ([entry.cache (session, 'co_core', cache.calculate_co_core) for entry in allentries])
 
-tcores = np.genfromtxt ("tcores.dat", names = True)
+# tcores = np.genfromtxt ("tcores.dat", names = True)
 lines = np.zeros (len (entries))
 
 osfactors = np.array ([entry.osfactor if (entry.brumoson > 0.0) else 1 for entry in entries])
@@ -63,7 +63,7 @@ ax = axes
 ax.set_ylabel ("C/O Core Mass (solar masses)")
 scs.append (ax.scatter (allhecores.to (u.solMass), allcocores.to (u.solMass), 15.0, c = 'black', alpha = 0.5))
 scs.append (ax.scatter (hecores.to (u.solMass), cocores.to (u.solMass), 70.0, c = scpowers, picker = True, norm = matplotlib.colors.LogNorm (vmin = 0.1, vmax = 10.0), label = "Brown & Woosley (in prep)"))
-scs.append (ax.scatter (tcores ["HeCore"], tcores ["COCore"], 70.0, marker = "s", c = tcores ["qr"], cmap = plt.get_cmap ("gray"), norm = matplotlib.colors.LogNorm (vmin = 0.001, vmax = 0.1), label = "Sukhbold & Woosley (2013)"))
+# scs.append (ax.scatter (tcores ["HeCore"], tcores ["COCore"], 70.0, marker = "s", c = tcores ["qr"], cmap = plt.get_cmap ("gray"), norm = matplotlib.colors.LogNorm (vmin = 0.001, vmax = 0.1), label = "Sukhbold & Woosley (2013)"))
 ylim = ax.get_ylim ()
 xlim = ax.get_xlim ()
 x = np.arange (5.6, 8.5, 0.1)

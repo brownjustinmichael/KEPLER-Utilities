@@ -224,3 +224,9 @@ class CNVFile:
     def __len__ (self):
         return len (self.models)
         
+    def modelNear (self, time):
+        for i, model in enumerate (self):
+            if model ["timesec"] * u.s > time:
+                return i
+        return len (self) - 1
+        
