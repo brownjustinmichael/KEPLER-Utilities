@@ -5,13 +5,17 @@ from sqlalchemy.sql import func
 from kepler_utils.database.database import DumpFileEntry
 
 class CorePlot (object):
-    """ax is a MatPlotLib axis object, query is a SQLAlchemy instance from the KEPLER database"""
+    """
+    ax is a MatPlotLib axis object
+    query is a SQLAlchemy instance from the KEPLER database
+        This works best if query has no columns. If there is no binning, query can have columns. If there is binning, query can only have aggregate columns.
+    """
     
     def __init__ (self, ax, query):
         self.ax = ax
         self.query = query
         
-    def plotScatter (self, xkey, ykey, skey = None, ckey = None, binkey = None, bins = 10, binMin = None, binMax = None, clsType = DumpFileEntry, **kwargs):
+    def plotScatter (self, xkey, ykey, skey = None, ckey = None, binkey = None, bins = 10, binMin = None, binMax = None, clsType = DumpFileEntry, errorbars = False, **kwargs):
         query = self.query
         
         # If binning is intended (binkey is not None), group the data into bins
@@ -29,15 +33,14 @@ class CorePlot (object):
             # TODO It might be nice if this could bin by non-numerical data too
             if isinstance (binkey, str):
                 binkey = getattr (DumpFileEntry, binkey)
-            query = self.query.add_column (func.floor (binkey / (binMax - binMin) * bins + binMin).label ("bin")).group_by ("bin")
+            query = self.query.add_column (func.floor (binkey / (binMax - binMin) * bins + binMin).label ("bin")).group_by ("bin").filter (binkey >= binMin, binkey <= binMax)
             
         # Add the keys to the query, using the cacheQuery method
-        query = clsType.cacheQuery (xkey, query, function = None if binkey is None else "avg", label = "xkey")
-        query = clsType.cacheQuery (ykey, query, function = None if binkey is None else "avg", label = "ykey")
-        if skey is not None:
-            query = clsType.cacheQuery (skey, query, function = None if binkey is None else "avg", label = "skey")
-        if skey is not None:
-            query = clsType.cacheQuery (ckey, query, function = None if binkey is None else "avg", label = "ckey")
+        for key, name in zip ([xkey, ykey, skey, ckey], ["xkey", "ykey", "skey", "ckey"]):
+            if key is not None:
+                query = clsType.cacheQuery (key, query, function = None if binkey is None else "avg", label = name)
+                if binkey is not None and errorbars:
+                    query = clsType.cacheQuery (key, query, function = "stddev", label = name + "std")
                     
         # Execute the query
         results = query.all ()
@@ -48,4 +51,10 @@ class CorePlot (object):
         if ckey is not None:
             kwargs ["c"] = [res.ckey for res in results]
         
-        self.ax.scatter ([res.xkey for res in results], [res.ykey for res in results], **kwargs)
+        s = self.ax.scatter ([res.xkey for res in results], [res.ykey for res in results], **kwargs)
+        if binkey is not None and errorbars:
+            kwargs.pop ("label", "")
+            e = self.ax.errorbar ([res.xkey for res in results], [res.ykey for res in results], xerr = [res.xkeystd for res in results], yerr = [res.ykeystd for res in results], linestyle = "None", **kwargs)
+            return (s, e)
+        else:
+            return (s,)

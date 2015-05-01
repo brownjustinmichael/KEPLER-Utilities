@@ -11,7 +11,7 @@ import astropy.units as u
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import aliased
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, and_
 from sqlalchemy.sql.elements import ColumnElement
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.sql.functions import FunctionElement
@@ -207,8 +207,14 @@ class SimulationEntry (Base):
         session.commit ()
         
     @classmethod
-    def contains (cls, session, tag):
-        return cls.tags.contains (Tag.get (session, tag))
+    def contains (cls, session, tags):
+        if isinstance (tags, str):
+            return cls.tags.contains (Tag.get (session, tags))
+        else:
+            result = True
+            for tag in tags:
+                result = and_ (result, cls.contains (session, tag))
+            return result
         
     def getParamArray (self, param, start = None, end = None, exclude = None):
         exclude = [] if exclude is None else exclude

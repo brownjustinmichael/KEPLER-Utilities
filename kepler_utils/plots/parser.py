@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 class PlotArgumentParser (argparse.ArgumentParser):
     """A subclass of argument parser for plotting routines to conveniently add command line options"""
     
-    def __init__ (self):
-        super(PlotArgumentParser, self).__init__()
-        self.add_argument ('input_file')
+    def __init__ (self, inputFile = True, *args, **kwargs):
+        super(PlotArgumentParser, self).__init__(*args, **kwargs)
+        if inputFile:
+            self.add_argument ('input_file')
         self.add_argument ('--output', default = None)
         self.add_argument ('--style', default = None)
         
