@@ -16,7 +16,6 @@ parser.add_argument ("--binkey", default = "scpower")
 parser.add_argument ("--binlog", dest = "binlog", action = 'store_true')
 parser.add_argument ("--checkcache", dest = "checkcache", action = 'store_true')
 
-parser.set_defaults (elements = True)
 namespace = parser.parse_args ()
 
 session = Session ()

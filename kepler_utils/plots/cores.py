@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import numpy as np
+
 from sqlalchemy.sql import func
 
 from kepler_utils.database.database import DumpFileEntry
@@ -15,7 +17,7 @@ class CorePlot (object):
         self.ax = ax
         self.query = query
         
-    def plotScatter (self, xkey, ykey, skey = None, ckey = None, binkey = None, bins = 10, binMin = None, binMax = None, clsType = DumpFileEntry, errorbars = False, **kwargs):
+    def plotScatter (self, xkey, ykey, skey = None, ckey = None, binkey = None, bins = 10, binMin = None, binMax = None, clsType = DumpFileEntry, errorbars = False, resize = False, **kwargs):
         query = self.query
         
         # If binning is intended (binkey is not None), group the data into bins
@@ -47,7 +49,9 @@ class CorePlot (object):
         
         # Plot the data
         if skey is not None:
-            kwargs ["s"] = [res.skey for res in results]
+            kwargs ["s"] = np.array ([res.skey for res in results])
+            if resize:
+                kwargs ["s"] = (kwargs ["s"] - np.min (kwargs ["s"])) / (np.max (kwargs ["s"]) - - np.min (kwargs ["s"])) * 100 + 20
         if ckey is not None:
             kwargs ["c"] = [res.ckey for res in results]
         
