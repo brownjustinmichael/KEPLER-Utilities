@@ -5,6 +5,8 @@ import inspect
 import abc
 import hashlib
 import types
+import subprocess
+import getpass
 
 import numpy as np
 import astropy.units as u
@@ -23,7 +25,8 @@ from kepler_utils.records.cnv import CNVFile
 Base = declarative_base ()
 
 # Start the database engine with a database called dumpfiles.db in the current directory
-engine = sqlalchemy.create_engine ('postgresql:///keplerdb', echo = False)
+password = getpass.getpass ()
+engine = sqlalchemy.create_engine ('postgresql://justinbrown:%s@loki.ucsc.edu:5432/keplerdb' % password, echo = False)
 
 # Create a session class that's bound to the above engine
 Session = sqlalchemy.orm.sessionmaker (bind = engine)
@@ -451,7 +454,12 @@ class DumpFileEntry (FileEntry, Base):
     def get_data (self, cache = True, **kwargs):
         if self.dataobject is not None:
             return self.dataobject
-        dataobject = DataDump (self.file, **kwargs)
+        try:
+            dataobject = DataDump (self.file, **kwargs)
+        except FileNotFoundError:
+            p = subprocess.Popen (['scp', 'loki.ucsc.edu:' + self.file, 'tmp'])
+            p.wait ()
+            dataobject = DataDump ('tmp', **kwargs)
         if not cache:
             return dataobject
         if self.dataobject is None:
@@ -482,7 +490,12 @@ class CNVFileEntry (FileEntry, Base):
     def get_data (self, cache = True, **kwargs):
         if self.dataobject is not None:
             return self.dataobject
-        dataobject = CNVFile (self.file, **kwargs)
+        try:
+            dataobject = CNVFile (self.file, **kwargs)
+        except FileNotFoundError:
+            p = subprocess.Popen (['scp', 'loki.ucsc.edu:' + self.file, 'tmp'])
+            p.wait ()
+            dataobject = CNVFile ('tmp', **kwargs)
         if not cache:
             return dataobject
         if self.dataobject == None:

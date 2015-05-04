@@ -10,8 +10,8 @@ from kepler_utils.plots.parser import PlotArgumentParser
 
 parser = PlotArgumentParser (inputFile = False)
 parser.add_argument ("--caches", nargs = "*", default = ["he_core"])
-parser.add_argument ("--tags", nargs = "*", default = [])
-parser.add_argument ("--states", nargs = "*", default = [])
+parser.add_argument ("--tags", nargs = "*", default = ["OS/SC Grid", "Low dtcp"])
+parser.add_argument ("--states", nargs = "*", default = ["heign", "hedep"])
 parser.add_argument ("--binkey", default = "scpower")
 parser.add_argument ("--binlog", dest = "binlog", action = 'store_true')
 parser.add_argument ("--checkcache", dest = "checkcache", action = 'store_true')

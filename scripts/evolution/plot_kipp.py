@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import kepler_utils.records.cnv
 import kepler_utils.plots.kipp
 import kepler_utils.plots.shiftlog
+import kepler_utils.database.database as db
 
 # matplotlib.rc ('text', usetex = True)
 
@@ -29,7 +30,11 @@ namespace = parser.parse_args ()
 if namespace.logSpace is None:
     namespace.logSpace = not namespace.models
 
-cnv_record = kepler_utils.records.cnv.CNVFile (namespace.input_file)
+try:
+    cnv_record = kepler_utils.records.cnv.CNVFile (namespace.input_file)
+except FileNotFoundError:
+    session = db.Session ()
+    cnv_record = session.query (db.CNVFileEntry).filter (db.CNVFileEntry.file.contains (namespace.input_file)).first ().get_data ()
 
 if namespace.min == None and namespace.max == None:
     extent = None

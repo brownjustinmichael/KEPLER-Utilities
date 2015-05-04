@@ -41,5 +41,5 @@ for habun in habuns:
     file.close ()
 
 for i, (l, mc, m, r, habun) in enumerate (sets):
-    name = "s15e%04d" % (i + 1600)
+    name = "s15e%04d" % (i + 2200)
     kepler_jobs.run.apply_async ([name, generator, run_location, command], kwargs = {'force': False, 'query': False, 'p izonezms': 0, 'p q1faczms': 1000., 'p nstop': 10000, 'p radius0': r, 'p xlum0': l, 'p summ0': mc.to (u.g).value, 'p timezms': 1.0e-5, 'p tstop': 3.15e13, 'p ipup': 0, 'rescalem': str ((m - mc).to (u.solMass).value) + " mult", 'alias zams': "\"link \'%s\'\"" % (str (habun) + "split"), 'tags': ["Envelope", "Habun = " + str (habun), "Split"], "query": True, "goal": "final"}, queue = 'default')

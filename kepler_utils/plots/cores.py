@@ -17,7 +17,7 @@ class CorePlot (object):
         self.ax = ax
         self.query = query
         
-    def plotScatter (self, xkey, ykey, skey = None, ckey = None, binkey = None, bins = 10, binMin = None, binMax = None, clsType = DumpFileEntry, errorbars = False, resize = False, **kwargs):
+    def plotScatter (self, xkey, ykey, skey = None, ckey = None, binkey = None, bins = 10, binMin = None, binMax = None, clsType = DumpFileEntry, errorbars = False, resize = False, xscale = 1.0, yscale = 1.0, **kwargs):
         query = self.query
         
         # If binning is intended (binkey is not None), group the data into bins
@@ -51,14 +51,14 @@ class CorePlot (object):
         if skey is not None:
             kwargs ["s"] = np.array ([res.skey for res in results])
             if resize:
-                kwargs ["s"] = (kwargs ["s"] - np.min (kwargs ["s"])) / (np.max (kwargs ["s"]) - - np.min (kwargs ["s"])) * 100 + 20
+                kwargs ["s"] = (kwargs ["s"] - np.min (kwargs ["s"])) / (np.max (kwargs ["s"]) - np.min (kwargs ["s"])) * 100 + 20
         if ckey is not None:
             kwargs ["c"] = [res.ckey for res in results]
         
-        s = self.ax.scatter ([res.xkey for res in results], [res.ykey for res in results], **kwargs)
+        s = self.ax.scatter ([res.xkey * xscale for res in results], [res.ykey * yscale for res in results], **kwargs)
         if binkey is not None and errorbars:
             kwargs.pop ("label", "")
-            e = self.ax.errorbar ([res.xkey for res in results], [res.ykey for res in results], xerr = [res.xkeystd for res in results], yerr = [res.ykeystd for res in results], linestyle = "None", **kwargs)
+            e = self.ax.errorbar ([res.xkey * xscale for res in results], [res.ykey * yscale for res in results], xerr = [res.xkeystd * xscale for res in results], yerr = [res.ykeystd * yscale for res in results], linestyle = "None", **kwargs)
             return (s, e)
         else:
             return (s,)
