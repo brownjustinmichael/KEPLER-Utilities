@@ -92,10 +92,10 @@ class KippenhahnPlot(object):
             
         # Set the plot labels
         if (not useModels):
-            self.axis.set_xlabel ("t (years)")
+            self.axis.set_xlabel ("$t$ (y)")
         else:
             self.axis.set_xlabel ("Model Number")
-        self.axis.set_ylabel ("m (solar masses)")
+        self.axis.set_ylabel ("$m$ ($M_{\odot}$)")
         
     def get_tmax (self):
         return self.xmax
@@ -203,7 +203,7 @@ class KippenhahnPlot(object):
         else:
             cb.set_ticklabels(['$\\mathdefault{10^{%d}}$' % (t) for t in range (-1, vmax + 1, vmax // 5 if vmax >= 5 else 1)] + ['$\\mathdefault{-10^{%d}}$' % (t) for t in range (-1, vmax + 1, vmax // 5 if vmax >= 5 else 1)])
     
-        cb.set_label ("energy generation loss/gain (erg/g/s)")
+        cb.set_label ("energy gain (erg/g/s)")
         return cb
         
     def plotConvection (self, points = 400, logspace = True, extent = None, **kwargs):

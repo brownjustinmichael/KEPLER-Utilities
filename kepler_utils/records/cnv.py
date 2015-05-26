@@ -44,7 +44,7 @@ class CNVFile:
             
 #             print ("Found version, filling variables...")
 
-            if version != 10500:
+            if version != 10500 and version != 0:
                 raise TypeError ("Can't handle version type %i" % version)
             ncyc = self.read_int ()
             timesec = self.read_double ()

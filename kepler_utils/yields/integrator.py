@@ -3,10 +3,11 @@ import astropy.units as u
 from .abundances import Abundances, solar
 
 class Integrator (object):
-    def __init__ (self, numberArray, normalize = 1.0):
+    def __init__ (self, massArray, numberArray, normalize = 1.0):
         self.freq = np.array (numberArray)
         self.freq /= np.sum (self.freq)
         self.normalize = np.ones (len (self.freq))
+        self.masses = massArray
         try:
             self.normalize *= float (normalize)
         except TypeError:
@@ -14,9 +15,22 @@ class Integrator (object):
             
         # print (self.freq)
         
-    def __call__ (self, array, mask = None, mask_frequency = False):
+    def __call__ (self, array, mask = None, mask_frequency = False, imfLowerLimit = None, imfUpperLimit = None):
         # print (self.freq)
         # print (array)
+        if imfUpperLimit is not None:
+            maskLower = np.logical_or (self.masses < imfUpperLimit * 1.01, self.masses == 0.0 * imfUpperLimit.unit)
+            if mask is not None:
+                mask = np.logical_and (mask, maskLower)
+            else:
+                mask = maskLower
+        if imfLowerLimit is not None:
+            maskUpper = np.logical_or (self.masses > imfLowerLimit * 0.99, self.masses == 0.0 * imfLowerLimit.unit)
+            if mask is not None:
+                mask = np.logical_and (mask, maskUpper)
+            else:
+                mask = maskUpper
+
         if mask is None:
             mask = np.ones (len (self), dtype = bool)
         freq = np.copy (self.freq) * self.normalize
@@ -42,18 +56,8 @@ class Integrator (object):
         
     def getAbundances (self, yieldReader, imfUpperLimit = None, imfLowerLimit = None):
         yd = {}
-        mask = None
-        if imfUpperLimit is not None:
-            mask = np.logical_or (yieldReader.get_masses () < imfUpperLimit * 1.01, yieldReader.get_masses () == 0.0 * imfUpperLimit.unit)
-        if imfLowerLimit is not None:
-            maskUpper = np.logical_or (yieldReader.get_masses () > imfLowerLimit * 0.99, yieldReader.get_masses () == 0.0 * imfLowerLimit.unit)
-            if mask is not None:
-                mask = np.logical_and (mask, maskUpper)
-            else:
-                mask = maskUpper
-           
         for isotope in yieldReader.isotopes:
-            value = self (yieldReader.get_yield (isotope), mask = mask)
+            value = self (yieldReader.get_yield (isotope), imfLowerLimit = imfLowerLimit, imfUpperLimit = imfUpperLimit)
             yd [isotope.string] = value
            
         return Abundances (yd)
@@ -80,23 +84,26 @@ class Integrator (object):
 class IMFIntegrator (Integrator):
     def __init__ (self, initial_masses, alpha = -2.35, normalize = 1.0):
         self.alpha = alpha
-        self.masses = u.Quantity (initial_masses [:])
         self.original_normalize = normalize
+        initial_masses = u.Quantity (initial_masses)
         
         if alpha == -1.0:
             raise ValueError ("Take your own logarithms.")
         
-        values = (self.masses ** (alpha + 1.0) / (alpha + 1.0)).value
+        values = (initial_masses ** (alpha + 1.0) / (alpha + 1.0)).value
 
-        mdiff = np.zeros (len (self.masses))
-        mdiff [:-1] = np.diff (values)
-        mdiff [mdiff < 0.0] = 0.0
+        if len (initial_masses) == 1:
+            numberArray = np.array ([1.0])
+        else:
+            numberArray = np.zeros (len (initial_masses))
+            numberArray [:-1] = np.diff (values)
+            numberArray [numberArray < 0.0] = 0.0
         
         # We assume here that the coverage is continuous
         
-        total = ((max (self.masses) ** (alpha + 1.0) - min (self.masses) ** (alpha + 1.0)) / (alpha + 1.0) * normalize).value
-        
-        super (IMFIntegrator, self).__init__ (mdiff, normalize = normalize * (1.0 + (np.sum (mdiff) - total) / total))
+        total = ((max (initial_masses) ** (alpha + 1.0) - min (initial_masses) ** (alpha + 1.0)) / (alpha + 1.0) * normalize).value
+
+        super (IMFIntegrator, self).__init__ (u.Quantity (initial_masses [:]), numberArray, normalize = normalize * (1.0 + (((np.sum (numberArray) - total) / total) if total != 0.0 else 0.0)))
         
     def __add__ (self, other):
         if isinstance (other, IMFIntegrator):

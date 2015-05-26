@@ -2,6 +2,7 @@
 
 import numpy as np
 
+import matplotlib.pyplot as plt
 from sqlalchemy.sql import func
 
 from kepler_utils.database.database import DumpFileEntry
@@ -13,8 +14,10 @@ class CorePlot (object):
         This works best if query has no columns. If there is no binning, query can have columns. If there is binning, query can only have aggregate columns.
     """
     
-    def __init__ (self, ax, query):
+    def __init__ (self, query, ax = None):
         self.ax = ax
+        if self.ax is None:
+            fig, self.ax = plt.subplots (1, 1)
         self.query = query
         
     def plotScatter (self, xkey, ykey, skey = None, ckey = None, binkey = None, bins = 10, binMin = None, binMax = None, clsType = DumpFileEntry, errorbars = False, resize = False, xscale = 1.0, yscale = 1.0, **kwargs):
@@ -31,6 +34,8 @@ class CorePlot (object):
                 res = query.first ()
                 binMax = res.max if binMax is None else binMax
                 binMin = res.min if binMin is None else binMin
+                if binMax is None or binMin is None:
+                    raise ValueError ("Nothing matches query")
             # Add the binning procedure to the query
             # TODO It might be nice if this could bin by non-numerical data too
             if isinstance (binkey, str):
@@ -51,14 +56,16 @@ class CorePlot (object):
         if skey is not None:
             kwargs ["s"] = np.array ([res.skey for res in results])
             if resize:
-                kwargs ["s"] = (kwargs ["s"] - np.min (kwargs ["s"])) / (np.max (kwargs ["s"]) - np.min (kwargs ["s"])) * 100 + 20
+                minimum = np.min (kwargs ["s"])
+                maximum = np.max (kwargs ["s"])
+                if minimum != maximum:
+                    kwargs ["s"] = (kwargs ["s"] - minimum) / (maximum - minimum) * 100 + 20
+                else:
+                    kwargs ["s"] = 200
         if ckey is not None:
             kwargs ["c"] = [res.ckey for res in results]
         
-        s = self.ax.scatter ([res.xkey * xscale for res in results], [res.ykey * yscale for res in results], **kwargs)
-        if binkey is not None and errorbars:
-            kwargs.pop ("label", "")
-            e = self.ax.errorbar ([res.xkey * xscale for res in results], [res.ykey * yscale for res in results], xerr = [res.xkeystd * xscale for res in results], yerr = [res.ykeystd * yscale for res in results], linestyle = "None", **kwargs)
-            return (s, e)
+        if binkey is None or not errorbars:
+            return self.ax.scatter ([res.xkey * xscale for res in results], [res.ykey * yscale for res in results], **kwargs)
         else:
-            return (s,)
+            return self.ax.errorbar ([res.xkey * xscale for res in results], [res.ykey * yscale for res in results], xerr = [res.xkeystd * xscale for res in results], yerr = [res.ykeystd * yscale for res in results], linestyle = "None", **kwargs)

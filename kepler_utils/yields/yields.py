@@ -16,7 +16,7 @@ def makeDeluxe (text, index_label = "", caption = ""):
     mid = " & ".join ([r"\colhead{" + (head.rstrip ("\n\\ ").lstrip ("\n\\ ") if head.rstrip ("\n\\ ").lstrip ("\n\\ ") != "{}" else index_label) + "}" for head in re.split (r"&", mid)])
     return begin + (r"\tablecaption{" + caption + "}\n" if caption != "" else "") + "\\tablehead{" + mid + "}\n\\startdata" + end
 
-def fromKeplerYield (filename, directory):
+def fromKeplerYield (filename, directory, table = 1):
     f = open (directory + filename, "r")
     i = 1
     prevLine = "None"
@@ -29,51 +29,45 @@ def fromKeplerYield (filename, directory):
         prevLine = line
         line = f.readline ()
         i += 1
-    while line.split () != []:
-        prevLine = line
-        line = f.readline ()
-        i += 1
+    for j in range (table):
+        while line.split () == []:
+            prevLine = line
+            line = f.readline ()
+            i += 1
+
+        while line.split () != []:
+            prevLine = line
+            line = f.readline ()
+            i += 1
     return i
 
 class YieldReader (object):
-    def __init__ (self, directory = "yields/wh07/", extension = ".yield", masses = None, winds = True, explosions = True, keplerYield = True, totalYieldName = "yieldall", windYieldName = "yieldwind", expYieldName = None, isotopeName = "isotope"):
+    def __init__ (self, directory = "yields/wh07/", extension = ".yield", masses = None, winds = True, explosions = True, keplerYield = True, totalYieldName = "yieldall", windYieldName = "yieldwind", expYieldName = None, isotopeName = "isotope", table = 1):
         results = collections.OrderedDict ()
-        mass_file = {}
+        file_dict = {}
         self.models = []
+        self.masses = []
         self.winds = winds
         self.explosions = explosions
-        for file in os.listdir (directory):
-            name = file.split (".") [0]
-            for i in file.split (".") [1:-1]:
-                name += "." + i
-            found = False
-            try:
-                for i in range (1, len (name)):
-                    if (not name [i].isdigit () and not name [i] == "."):
-                        mod = name [i:]
-                        if mod == "hi" or mod == "norm":
-                            found = True
-                            break
-                        mass_file [(float (name [1:i]))] = file
-                        found = True
-                        break
-                if not found:
-                    mass_file [(float (name [1:]))] = file
-            except ValueError:
-                mass_file [0.0] = file
+        mass_file = open (directory + "/masses", "r")
+        for line in mass_file:
+            if line == "\n":
+                continue
+            line = line.rstrip ("\n").split (" ")
+            if len (line) > 1:
+                file_dict [float (line [0])] = line [1]
+            self.masses.append (float (line [0]) * u.solMass)
             
-        while len (mass_file) > 0:
-            mass_min = min (mass_file) * u.solMass
-            filename = mass_file.pop (min (mass_file))
+        while len (file_dict) > 0:
+            mass_min = min (file_dict) * u.solMass
+            filename = file_dict.pop (min (file_dict))
             if keplerYield:
-                i = fromKeplerYield (filename, directory)
+                i = fromKeplerYield (filename, directory, table)
             else:
                 i = 0
             results [mass_min] = np.genfromtxt (directory + filename, skip_header = i, names = True, dtype = None)
             
-        self.masses = u.Quantity ([result for result in results])
-        if masses is not None:
-            self.masses = u.Quantity (masses)
+        self.masses = u.Quantity (masses if masses is not None else self.masses)
         
         self.yields = DataFrame ()
         self.isotopes = []
@@ -142,8 +136,13 @@ class YieldReader (object):
     def __div__ (self, scalar):
         return self * (1.0 / scalar)
 
+    def __getitem__ (self, i):
+        if isinstance (i, slice):
+            return CompositeYieldReader ((self.masses [i],), (self.isotopes [i],), (self.yields [i],))
+        return CompositeYieldReader ((self.masses [i:i+1],), (self.isotopes [i:i+1],), (self.yields [i:i+1],))
+
 class CompositeYieldReader (YieldReader):
-    def __init__ (self, masses, isotopes, yields):
+    def __init__ (self, masses, isotopes, yields, scale = 1.0):
         self.masses = u.Quantity (np.array (np.concatenate (masses)), masses [0].unit)
         self.isotopes = []
         for isotopeArray in isotopes:
@@ -155,4 +154,5 @@ class CompositeYieldReader (YieldReader):
         for dataframe in yields:
             self.yields = self.yields.append (dataframe)
         self.yields = self.yields.fillna (0.0)
+        self.yields *= scale
         

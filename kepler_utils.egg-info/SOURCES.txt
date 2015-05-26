@@ -16,16 +16,12 @@ scripts/database/run_single_env.py
 scripts/database/update_db.py
 scripts/evolution/calc_types.py
 scripts/evolution/cores.py
-scripts/evolution/optimize_attempt.py
 scripts/evolution/plot_abundances.py
 scripts/evolution/plot_averages.py
 scripts/evolution/plot_cores.py
-scripts/evolution/plot_cores_os.py
-scripts/evolution/plot_cores_sc.py
 scripts/evolution/plot_hr.py
 scripts/evolution/plot_hshell_T.py
 scripts/evolution/plot_kipp.py
-scripts/evolution/plot_mass_radius.py
 scripts/evolution/plot_nuc.py
 scripts/evolution/plot_os_fraction.py
 scripts/evolution/plot_profile.py

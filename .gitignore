@@ -9,4 +9,7 @@ python/*/*
 *.pdf
 *.png
 *.db
+*.db-journal
+*.dat
 .ipynb*
+kepler_utils.egg-info/*

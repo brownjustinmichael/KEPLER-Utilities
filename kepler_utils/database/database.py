@@ -24,12 +24,22 @@ from kepler_utils.records.cnv import CNVFile
 # Setup the declarative base class for inheritance
 Base = declarative_base ()
 
-# Start the database engine with a database called dumpfiles.db in the current directory
-password = getpass.getpass ()
-engine = sqlalchemy.create_engine ('postgresql://justinbrown:%s@loki.ucsc.edu:5432/keplerdb' % password, echo = False)
+def Session (password = None, *args, **kwargs):
+    if password is None and Session.password_cache is None:
+        password = getpass.getpass ()
+    if password is None and Session.password_cache is not None:
+        password = Session.password_cache
 
-# Create a session class that's bound to the above engine
-Session = sqlalchemy.orm.sessionmaker (bind = engine)
+    engine = sqlalchemy.create_engine ('postgresql://justinbrown:%s@loki.ucsc.edu:5432/keplerdb' % password, echo = False)
+
+    Base.metadata.create_all (engine)
+
+    if Session.password_cache is None:
+        Session.password_cache = password
+
+    return sqlalchemy.orm.sessionmaker (bind = engine) (*args, **kwargs)
+
+Session.password_cache = None
 
 # A conversion from string to sqlalchemy types
 types = {'float' : sqlalchemy.Float, 'integer' : sqlalchemy.Integer}
@@ -121,7 +131,7 @@ class Cache (object):
         entrycls.Cache = cls.CacheFactory (entrycls.__name__ + "Cache", entrycls, entrycls.__name__.lower ().replace ("entry", "") + "cache", backref = sqlalchemy.orm.backref ('cached'))
     
         # Define the caching method for cls, which will check whether the value has been cached previously
-        def cache (self, session, cache_name, function, **kwargs):
+        def cache (self, session, cache_name, function = None, **kwargs):
             # Create a string version of the function for code comparison
             try:
                 code = ''.join (inspect.getsourcelines (function) [0])
@@ -141,10 +151,12 @@ class Cache (object):
             # Evaluate the cached function
             kwargs ["cache"] = kwargs.pop ("cache", True)
             if function == None:
-                raise ValueError ("Unable to find value in database.")
+                raise ValueError ("Unable to find %s in %s" % (cache_name, str (self)))
             result = u.Quantity (function (self.get_data (**kwargs)))
             self.cached.append (self.Cache (name = cache_name, value = result.value, unit = str (result.unit), code = code))
-    
+            
+            print ("Caching %s as %s in %s" % (str (result), cache_name, str (self)))
+
             # Commit the result and return it
             session.commit ()
             return result
@@ -184,7 +196,7 @@ class SimulationEntry (Base):
         for dump in self.dumpfiles:
             if dump.state == state:
                 return dump
-        raise IndexError ("State %s not found in simulation" % state)
+        raise IndexError ("State %s not found in simulation %s" % (state, self))
         
     def copy_parameters (self, entry):
         """
@@ -233,7 +245,7 @@ class SimulationEntry (Base):
         dumps = sorted (ns, key = lambda x: x [1])
         return np.array ([getattr (dump, param) for dump, n in dumps])
     
-    def getCachedArray (self, cache, function = None, start = None, end = None, exclude = None):
+    def getCachedArray (self, cache, function = None, start = None, end = None, exclude = None, ignore_missing = False):
         exclude = [] if exclude is None else exclude
         if start is None:
             start = 0
@@ -244,9 +256,18 @@ class SimulationEntry (Base):
         if isinstance (end, str):
             end = self.getStateDump (end).ncyc
         ns = [(dump, dump.ncyc) for dump in self.dumpfiles if (end >= dump.ncyc >= start and dump.state not in exclude)]
-        session = Session.object_session (self)
+        session = sqlalchemy.inspect (self).session
         dumps = sorted (ns, key = lambda x: x [1])
-        return u.Quantity ([dump.cache (session, cache, function) for dump, n in dumps])
+        results = []
+        for dump, n in dumps:
+            try:
+                results.append (dump.cache (session, cache, function))
+            except ValueError as e:
+                if ignore_missing:
+                    pass
+                else:
+                    raise e
+        return u.Quantity (results)
 
 class FileEntry (object):
     """
@@ -560,7 +581,7 @@ def cnv_cache (session, sims, funcs):
         sims = sims.all ()
         
     if not isinstance (sims, SimulationEntry):
-        sims = [sim [0] for sim in sims]
+        sims = [sim for sim in sims]
         
     cnvs = [sim.cnvfiles [0] for sim in sims]
     
@@ -578,4 +599,3 @@ def cnv_cache (session, sims, funcs):
         
     return results
 
-Base.metadata.create_all (engine)

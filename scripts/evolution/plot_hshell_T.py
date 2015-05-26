@@ -40,6 +40,9 @@ def calculate_L_h (datadump):
 def calculate_T_center (datadump):
     return datadump ["tn"] [0]
 
+def calculate_P_center (datadump):
+    return datadump ["pn"] [0]
+
 def calculate_efold_T_center (datadump):
     return datadump ["mass coordinate"] [np.argmax (datadump ["tn"] < datadump ["tn"] [0] / math.e)]
 
@@ -128,7 +131,7 @@ tags = [getTag (sim.tags) for sim in sims]
 
 states = ["heign"] + ["%d" % i for i in range (18000, 32000, 2000)] + ["hedep"]
 
-results = db.cache (session, sims, {"L_he": calculate_L_hshell, "M_core": calculate_he_core, "U_core": calculate_U_core, "U_total": calculate_U, "h_10fold": calculate_h_10fold, "L_edd": calculate_L_edd, "L_h": calculate_L_h, "r_hshell": calculate_r_hshell, "habun": calculate_hshell_abun}, states)
+results = db.cache (session, sims, {"L_he": calculate_L_hshell, "M_core": calculate_he_core, "U_core": calculate_U_core, "U_total": calculate_U, "h_10fold": calculate_h_10fold, "L_edd": calculate_L_edd, "L_h": calculate_L_h, "r_hshell": calculate_r_hshell, "habun": calculate_hshell_abun, "heabun": calculate_he_abun, "T_center": calculate_T_center, "P_center": calculate_P_center}, states)
 
 results ["L_edd"] = results ["L_edd"].to (u.erg / u.s)
 results ["L_h"] -= results ["L_he"]
@@ -144,7 +147,7 @@ results.pop ("U_total")
 results ["radius"] = np.array ([[sim.getStateDump (state).radius for state in states] for sim in sims]) * u.cm
 results ["L"] = np.array ([[sim.getStateDump (state).xlum for state in states] for sim in sims]) * u.erg / u.s
 results ["mass"] = np.array ([[sim.getStateDump (state).totm for state in states] for sim in sims]) * u.g
-# results ["mass loss"] = np.array ([[sim.getStateDump (state).xmlossr for state in states] for sim in sims]) * u.g / u.s
+results ["mass loss"] = np.array ([[sim.getStateDump (state).xmlossr for state in states] for sim in sims]) * u.g / u.s
 
 results ["osfactors"] = u.Quantity ([u.Quantity ([sim.osfactor] * len (states)) for sim in sims])
 results ["scpowers"] = u.Quantity ([u.Quantity ([sim.scpower] * len (states)) for sim in sims])

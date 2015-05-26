@@ -1,6 +1,22 @@
 import argparse
 import atexit
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from matplotlib.colors import ListedColormap
+
+puor = cm.get_cmap ("PuOr")
+brbg = cm.get_cmap ("BrBG")
+
+colors = []
+
+for i in range (puor.N):
+    if i <128:
+        colors.append (puor (i))
+    else:
+        colors.append (brbg (i))
+
+BGOr = ListedColormap (colors, 'BGOr')
+plt.register_cmap (cmap = BGOr)
 
 class PlotArgumentParser (argparse.ArgumentParser):
     """A subclass of argument parser for plotting routines to conveniently add command line options"""
@@ -20,18 +36,24 @@ class PlotArgumentParser (argparse.ArgumentParser):
         if self.namespace.style is not None:
             plt.style.use (self.namespace.style)
             
-        atexit.register (self.outputOrShow)
+        # atexit.register (self.outputOrShow)
             
         return self.namespace
     
-    def outputOrShow (self):
+    def exit (self, fig = None):
+        if fig is not None:
+            fig.patch.set_alpha (0.0)
+
         try:
             plt.tight_layout ()
         except ValueError:
             print ("Issue with tight layout.")
         
         if (self.namespace.output is not None):
-            plt.savefig (self.namespace.output)
+            if self.namespace.output.split (".") [-1] == "png":
+                plt.savefig (self.namespace.output, dpi = 1000)
+            else:
+                plt.savefig (self.namespace.output)
         else:
             # Plot the result
             plt.show ()

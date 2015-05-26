@@ -12,7 +12,7 @@ if len (argv) > 1:
 else:
     masses = [25]
 
-w18yr = YieldReader (directory = "yields/y_data_W18_special_15x0_30x0/", masses = np.arange (15.0, 30.0, 0.1) * u.solMass, winds = False)
+w18yr = YieldReader (directory = "yields/yields_w18/", masses = np.concatenate ([np.arange (9.5, 12.0, 0.5), np.arange (12.0, 30.0, 0.1), np.array ([30., 31., 32., 33., 35., 40., 45., 50., 55., 60., 70., 80., 100., 120.])]) * u.solMass, winds = False)
 whyr = YieldReader (explosions = False)
 
 table = None

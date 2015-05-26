@@ -38,7 +38,7 @@ for cache, axis in zip (namespace.caches, axes):
 
     for state in namespace.states:
         qs = q.filter (DumpFileEntry.state == state)
-        cign = CorePlot (axis, qs)
+        cign = CorePlot (qs, axis)
     
         binkey = getattr (DumpFileEntry, namespace.binkey)
         if namespace.binlog:

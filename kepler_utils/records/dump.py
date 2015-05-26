@@ -3,10 +3,11 @@ import time
 import re
 
 import fortranfile
-import numpy
+import numpy as np
 import struct
 import pandas
 import astropy.units as u
+import astropy.constants as consts
 import periodictable
 
 __location__ = os.path.realpath (os.path.join (os.getcwd (), os.path.dirname (__file__)))
@@ -20,6 +21,9 @@ class Isotope(object):
     """
     def __init__(self, string, a = None, z = None, **kwargs):
         super (Isotope, self).__init__()
+
+        if string == "neutrons":
+            string = "nt1"
         
         try:
             self.string = string.decode ()
@@ -141,6 +145,10 @@ class Isotope(object):
             label = '$^{' + str (int (a)) + '}\mathrm{' + label.capitalize () + '}$'
         return label
 
+    @classmethod
+    def fromList (cls, isotopes):
+        return [cls (iso) for iso in isotopes]
+
 class Dump (object):
     """
     This base class contains most of the dump file information except the actual data
@@ -193,16 +201,16 @@ class Dump (object):
     def _readInts (self, num, kind = 8):
         """
         Read num integers from self.file, kind is the fortran kind of integer to read (2, 4, 8 possible)
-        Return a numpy array of integers
+        Return a np array of integers
         """
         if kind == 16:
-            return numpy.array (struct.unpack ('>' + str (num) + 'q', self.file.read (num * 8)))
+            return np.array (struct.unpack ('>' + str (num) + 'q', self.file.read (num * 8)))
         if kind == 8:
-            return numpy.array (struct.unpack ('>' + str (num) + 'i', self.file.read (num * 4)))
+            return np.array (struct.unpack ('>' + str (num) + 'i', self.file.read (num * 4)))
         if kind == 4:
-            return numpy.array (struct.unpack ('>' + str (num) + 'h', self.file.read (num * 2)))
+            return np.array (struct.unpack ('>' + str (num) + 'h', self.file.read (num * 2)))
         if kind == 2:
-            return numpy.array (struct.unpack ('>' + str (num) + 'b', self.file.read (num)))
+            return np.array (struct.unpack ('>' + str (num) + 'b', self.file.read (num)))
         else:
             raise TypeError ("Unrecognized integer kind.")
 
@@ -218,9 +226,9 @@ class Dump (object):
     def _readDoubles (self, num, kind = 8):
         """
         Read num doubles from self.file, kind is the fortran kind of real to read (8 possible)
-        Return a numpy array of doubles
+        Return a np array of doubles
         """
-        return numpy.array (struct.unpack ('>' + str (num) + 'd', self.file.read (num * kind)))
+        return np.array (struct.unpack ('>' + str (num) + 'd', self.file.read (num * kind)))
 
     def _readChars (self, num, asByteString = False):
         """
@@ -393,8 +401,16 @@ class DataDump (Dump):
         
         # Read dump file contents
         self._read_full (loadBurn)
-        
+
         self.file.close ()
+        
+        self.df ["beta"] = ((self ["tn"] * self ["dn"] * (1 + self ["zbar"]) / self ["abar"].value * consts.k_B / consts.m_p) / self ["pn"]).to (1)
+        self.units ["beta"] = 1.0
+
+        self.df ["zbar"] = np.sum ([self [str (ion)] * ion.z / ion.a * self ["abar"] if ion.a != 0 else 0.0 * self ["abar"] for ion in self.ions], 0)
+
+        self.df ["ledd"] = ((1 - self ["beta"]) * consts.G * self ["mass coordinate"] * 4.0 * np.pi * consts.c / (6.6525e-29 * u.m ** 2 * self ["zbar"] / self ["abar"].value / consts.m_p)).to (u.erg / u.s)
+        self.units ["ledd"] = u.erg / u.s
     
     def __getitem__ (self, index):
         """
@@ -429,7 +445,7 @@ class DataDump (Dump):
         Returns an astropy quantity of the core mass associated with the isotope string
         """
         isos = [str (iso) for iso in self.getIsotopes ()]
-        index = len (self [string]) - 1 - numpy.argmax (numpy.diff (self [string] < self.df [isos].max (1)) [::-1])
+        index = len (self [string]) - 1 - np.argmax (np.diff (self [string] < self.df [isos].max (1)) [::-1])
         if index == len (self [string]) - 1:
             return u.Quantity (0.0, 'g')
         return self.df ['mass coordinate'] [index]
@@ -454,28 +470,28 @@ class DataDump (Dump):
         self._readZones (self.stardata, self.units, self.jmsave, self.numInterfacialZoneArrays, self.numCenteredZoneArrays, 33)
         
         # Read in the abundance data for the small network
-        ppn = numpy.array ([self._readDoubles (self.numNetworkIons) for i in range (self.jmsave - 1)])
+        ppn = np.array ([self._readDoubles (self.numNetworkIons) for i in range (self.jmsave - 1)])
         self._readDouble ()
         
         # Magnetic fields should be included here
         if (self.parameters ['magnet'] > 0.0):
-            self.stardata ['bfvisc'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfvisc'] = np.zeros (self.jmsave + 1)
             self.stardata ['bfvisc'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 1) [:-1], u.cm ** 2 / u.s)
-            self.stardata ['bfdiff'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfdiff'] = np.zeros (self.jmsave + 1)
             self.stardata ['bfdiff'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 2) [:-2], u.cm ** 2 / u.s)
-            self.stardata ['bfbr'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfbr'] = np.zeros (self.jmsave + 1)
             self.stardata ['bfbr'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 1) [:-1], u.gauss)
-            self.stardata ['bfbt'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfbt'] = np.zeros (self.jmsave + 1)
             self.stardata ['bfbt'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 2) [:-2], u.gauss)
-            self.stardata ['bfviscef'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfviscef'] = np.zeros (self.jmsave + 1)
             self.stardata ['bfviscef'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 1) [:-1], u.cm ** 2 / u.s)
-            self.stardata ['bfdiffef'] = numpy.zeros (self.jmsave + 1)
+            self.stardata ['bfdiffef'] = np.zeros (self.jmsave + 1)
             self.stardata ['bfdiffef'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 2) [:-2], u.cm ** 2 / u.s)
                     
         # Read in the viscosity and diffusion arrays
-        self.stardata ['angdgeff'] = numpy.zeros (self.jmsave + 1)
+        self.stardata ['angdgeff'] = np.zeros (self.jmsave + 1)
         self.stardata ['angdgeff'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 1) [:-1], u.cm ** 2 / u.s)
-        self.stardata ['difieff'] = numpy.zeros (self.jmsave + 1)
+        self.stardata ['difieff'] = np.zeros (self.jmsave + 1)
         self.stardata ['difieff'] [:-1] = u.Quantity (self._readDoubles (self.jmsave + 1) [:-1], u.cm ** 2 / u.s)
         
         # Flame data should be included here
@@ -485,7 +501,7 @@ class DataDump (Dump):
         assert (self.parameters ['wimp'] <= 0.0)
         
         # Read in the convective energy contribution
-        self.stardata ['sadv'] = numpy.zeros (self.jmsave + 1)
+        self.stardata ['sadv'] = np.zeros (self.jmsave + 1)
         self.stardata ['sadv'] [:-1] = self._readDoubles (self.jmsave + 1) [:-1]
         
         # Skip UUID information
@@ -506,7 +522,7 @@ class DataDump (Dump):
             self._readDouble ()
         
         # Read energy dissipation due to shear
-        self.stardata ['sv'] = numpy.zeros (self.jmsave + 1)
+        self.stardata ['sv'] = np.zeros (self.jmsave + 1)
         self.stardata ['sv'] [1:-2] = self._readDoubles (self.jmsave - 2)
         
         # Read out user-defined parameters
@@ -524,7 +540,7 @@ class DataDump (Dump):
             self._readBurnZones (self.stardata, self.units, self.jmsave, self.parameters ['nsaveb'])
         
             # Read in the abundance data for the large network
-            ppnb = numpy.array ([self._readDoubles (self.numBurnIons) for i in range (self.jmsave - 1)])
+            ppnb = np.array ([self._readDoubles (self.numBurnIons) for i in range (self.jmsave - 1)])
             self._readDoubles (1)
         
             # Read in burn ions informational arrays
@@ -550,7 +566,7 @@ class DataDump (Dump):
         
         # Convert stardata into a pandas dataframe object
         starItems = [(key, list (self.stardata [key] [1:-1])) for key in self.stardata]
-        starItems.append (("mass coordinate", list (self.parameters ['totm'] - self.stardata ['ym'] [1:-1])))
+        starItems.append (("mass coordinate", list (self.parameters ['totm'] + self.parameters ['summ0'] - self.stardata ['ym'] [1:-1])))
         self.df = pandas.DataFrame.from_items (starItems)
         # self.df = pandas.DataFrame (self.stardata)
         
@@ -575,20 +591,20 @@ class DataDump (Dump):
         dic ['aion'] = self._readDoubles (self.numTotalIons) [:-1]
         dic ['zion'] = self._readDoubles (self.numTotalIons) [:-1]
         dic ['znumi'] = self._readInts (self.numNetworks * 2) [:self.numNetworks]
-        dic ['zionn'] = numpy.array ([self._readInts (self.maxNetworkIons) [:-1] for i in range (2 * self.numNetworks)]) [:self.numNetworks]
+        dic ['zionn'] = np.array ([self._readInts (self.maxNetworkIons) [:-1] for i in range (2 * self.numNetworks)]) [:self.numNetworks]
         
         # Read burn ion informational arrays
         dic ['aionb'] = self._readDoubles (self.numBurnIons) [:-1]
         dic ['zionb'] = self._readDoubles (self.numBurnIons) [:-1]
         dic ['znumib'] = self._readInts (self.numNetworksb * 2) [:self.numNetworksb]
-        dic ['zionnb'] = numpy.array ([self._readInts (self.numBurnIons) for i in range (2 * self.numNetworksb)]) [:self.numNetworksb]
+        dic ['zionnb'] = np.array ([self._readInts (self.numBurnIons) for i in range (2 * self.numNetworksb)]) [:self.numNetworksb]
         
         # Read timestep controllers
         dic ['dtc'] = self._readDoubles (self.maxTimestepControllers) * u.s
         dic ['zjdtc'] = self._readDoubles (self.maxTimestepControllers)
         
         # Read subroutine timing
-        dic ['timeused'] = numpy.array ([self._readDoubles (3) for i in range (self.nsubz + 1)]) * u.s
+        dic ['timeused'] = np.array ([self._readDoubles (3) for i in range (self.nsubz + 1)]) * u.s
 
         # Read nuclear rate arrays
         dic ['totalr'] = self._readDoubles (self.nreacz) * u.mol
@@ -747,7 +763,7 @@ class DataDump (Dump):
         Load abundance arrays from PPN data
         """
         self.ions = []
-        test = numpy.zeros ((numTotalIons, jmsave + 1))
+        test = np.zeros ((numTotalIons, jmsave + 1))
         
         for j in range (jmsave - 1):
             net  = netnum [j + 1] - 1
