@@ -16,8 +16,8 @@ def makeDeluxe (text, index_label = "", caption = ""):
     mid = " & ".join ([r"\colhead{" + (head.rstrip ("\n\\ ").lstrip ("\n\\ ") if head.rstrip ("\n\\ ").lstrip ("\n\\ ") != "{}" else index_label) + "}" for head in re.split (r"&", mid)])
     return begin + (r"\tablecaption{" + caption + "}\n" if caption != "" else "") + "\\tablehead{" + mid + "}\n\\startdata" + end
 
-def fromKeplerYield (filename, directory, table = 1):
-    f = open (directory + filename, "r")
+def fromKeplerYield (filename, table = 1):
+    f = open (filename, "r")
     i = 1
     prevLine = "None"
     line = f.readline ()
@@ -42,73 +42,83 @@ def fromKeplerYield (filename, directory, table = 1):
     return i
 
 class YieldReader (object):
-    def __init__ (self, directory = "yields/wh07/", extension = ".yield", masses = None, winds = True, explosions = True, keplerYield = True, totalYieldName = "yieldall", windYieldName = "yieldwind", expYieldName = None, isotopeName = "isotope", table = 1):
-        results = collections.OrderedDict ()
-        file_dict = {}
-        self.models = []
-        self.masses = []
-        self.winds = winds
-        self.explosions = explosions
-        mass_file = open (directory + "/masses", "r")
+    def __init__ (self, yields = None, scale = 1.0):
+        self.masses = [] if yields is None else [ind [0] for ind in yields.index]
+        self.isotopes = [] if yields is None else [Isotope (iso) for iso in yields.columns]
+        self.isotopes.sort ()
+        self.yields = DataFrame () if yields is None else yields
+        self.yields = self.yields.fillna (0.0)
+        self.yields *= scale
+
+    @classmethod
+    def from_file (cls, filename, mass, **kwargs):
+        self = cls ()
+        self.add_file (filename, mass, **kwargs)
+        return self
+
+    @classmethod
+    def from_directory (cls, directory = "yields/wh07/", mass_file = "masses", **kwargs):
+        self = cls ()
+        mass_file = open (directory + "/" + mass_file, "r")
         for line in mass_file:
             if line == "\n":
                 continue
             line = line.rstrip ("\n").split (" ")
-            if len (line) > 1:
-                file_dict [float (line [0])] = line [1]
-            self.masses.append (float (line [0]) * u.solMass)
-            
-        while len (file_dict) > 0:
-            mass_min = min (file_dict) * u.solMass
-            filename = file_dict.pop (min (file_dict))
-            if keplerYield:
-                i = fromKeplerYield (filename, directory, table)
-            else:
-                i = 0
-            results [mass_min] = np.genfromtxt (directory + filename, skip_header = i, names = True, dtype = None)
-            
-        self.masses = u.Quantity (masses if masses is not None else self.masses)
-        
-        self.yields = DataFrame ()
-        self.isotopes = []
-        i = 0
-        for result in results:
-            while i < len (self.masses) and self.masses [i] < result * 0.999999:
-                self.yields = self.yields.append ({}, ignore_index = True)
-                self.models.append (False)
-                i += 1
-                continue
-            if self.masses [i] > result * 1.000001:
-                continue
-            yieldDF = {}
-            for row in results [result]:
-                if row [isotopeName] == "total" or row [isotopeName] == b"total":
-                    break
-                isotope = Isotope (row [isotopeName]).string
-                if isotope not in self.isotopes:
-                    self.isotopes.append (isotope)
-                yieldDF [isotope] = 0.0
-                if self.winds and self.explosions and totalYieldName is not None:
-                    yieldDF [isotope] += float (row [totalYieldName])
-                else:
-                    if self.winds:
-                        yieldDF [isotope] += float (row [windYieldName])
-                    if self.explosions:
-                        if expYieldName is None:
-                            yieldDF [isotope] += float (row [totalYieldName]) - float (row [windYieldName])
-                        else:
-                            yieldDF [isotope] += row [expYieldName]
-            self.yields = self.yields.append (yieldDF, ignore_index = True)
-            self.models.append (True)
-            i += 1
-        for j in range (len (self.masses) - i):
-            self.yields = self.yields.append ({}, ignore_index = True)
-            self.models.append (False)
-        self.yields = self.yields.fillna (0.0)
-        self.isotopes = [Isotope (iso) for iso in self.isotopes]
+            try:
+                self.add_file (directory + "/" + line [1], float (line [0]) * u.solMass, **kwargs)
+            except IndexError:
+                self.yields = self.yields.append (DataFrame ([{"mass": float (line [0]) * u.solMass, "file": directory + "/"}]).set_index (["mass", "file"]))
+                self.masses.append (float (line [0]) * u.solMass)
+        return self
+
+    @classmethod
+    def combine (cls, yield_readers):
+        self = cls ()
+        self.masses = u.Quantity (np.array (np.concatenate ([yr.masses for yr in yield_readers])))
+        for yr in yield_readers:
+            isotopeArray = yr.isotopes
+            for iso in isotopeArray:
+                if iso not in self.isotopes:
+                    self.isotopes.append (iso)
         self.isotopes.sort ()
-        self.models = np.array (self.models)
-            
+        for yr in yield_readers:
+            dataframe = yr.yields
+            self.yields = self.yields.append (dataframe)
+        self.yields = self.yields.fillna (0.0)
+        return self
+
+    def add_file (self, filename, mass, winds = True, explosions = True, keplerYield = True, totalYieldName = "yieldall", windYieldName = "yieldwind", expYieldName = None, isotopeName = "isotope", table = 1):
+        self.masses.append (mass)
+        if keplerYield:
+            i = fromKeplerYield (filename, table)
+        else:
+            i = 0
+        result = np.genfromtxt (filename, skip_header = i, names = True, dtype = None)
+
+        yieldDF = {}
+        yieldDF ["mass"] = mass
+        yieldDF ["file"] = filename
+        for row in result:
+            if row [isotopeName] == "total" or row [isotopeName] == b"total":
+                break
+            isotope = Isotope (row [isotopeName])
+            if isotope not in self.isotopes:
+                self.isotopes.append (isotope)
+            yieldDF [isotope.string] = 0.0
+            if winds and explosions and totalYieldName is not None:
+                yieldDF [isotope.string] += float (row [totalYieldName])
+            else:
+                if winds:
+                    yieldDF [isotope.string] += float (row [windYieldName])
+                if explosions:
+                    if expYieldName is None:
+                        yieldDF [isotope.string] += float (row [totalYieldName]) - float (row [windYieldName])
+                    else:
+                        yieldDF [isotope.string] += row [expYieldName]
+        self.yields = self.yields.append (DataFrame ([yieldDF]).set_index (["mass", "file"]))
+        self.yields = self.yields.fillna (0.0)
+        self.isotopes.sort ()
+  
     def get_yield (self, isotope, massArray = None, tolerance = 0.0001):
         if isinstance (isotope, Isotope):
             isotope = isotope.string
@@ -123,13 +133,15 @@ class YieldReader (object):
         
     def get_masses (self):
         return self.masses
+
+    def get_keys (self):
+        return [i for i in self.yields.index]
         
     def __add__ (self, other):
-        return CompositeYieldReader ((self.masses, other.masses), (self.isotopes, other.isotopes), (self.yields, other.yields))
+        return YieldReader (self.yields.add (other.yields, fill_value = 0.0))
         
     def __mul__ (self, scalar):
-        new_yields = self.yields * scalar
-        return CompositeYieldReader ((self.masses,), (self.isotopes,), (new_yields,))
+        return YieldReader (self.yields, scalar)
         
     __rmul__ = __mul__
     
@@ -138,8 +150,8 @@ class YieldReader (object):
 
     def __getitem__ (self, i):
         if isinstance (i, slice):
-            return CompositeYieldReader ((self.masses [i],), (self.isotopes [i],), (self.yields [i],))
-        return CompositeYieldReader ((self.masses [i:i+1],), (self.isotopes [i:i+1],), (self.yields [i:i+1],))
+            return YieldReader (self.yields [i])
+        return YieldReader (self.yields [i:i+1])
 
 class CompositeYieldReader (YieldReader):
     def __init__ (self, masses, isotopes, yields, scale = 1.0):

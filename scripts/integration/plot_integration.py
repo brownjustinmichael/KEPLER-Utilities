@@ -24,12 +24,12 @@ parser.add_argument ('plots', nargs = "*", type = int)
 namespace = parser.parse_args ()
 
 # Grab the wind yields and IMF from the WH07 models; do not include the explosions from this set
-wyr = YieldReader (explosions = False)
-wimf = IMFIntegrator (wyr.get_masses ())
+wyr = YieldReader.from_directory (explosions = False)
+wimf = IMFIntegrator.from_yieldreader (wyr)
 
 # Grab the yields and IMF from T's W18 calibrated runs, for which the masses must be stated explicitly because we're missing models; do not include the winds from these sets
-yr = YieldReader (directory = namespace.yields, winds = False)
-imf = IMFIntegrator (yr.get_masses ())
+yr = YieldReader.from_directory (directory = namespace.yields, winds = False)
+imf = IMFIntegrator.from_yieldreader (yr)
 
 # Grab the yields from our Ia model of choice; if using the w7 model, we'll need to be more explicit since it isn't stored in a kepler yield format
 typeiayr = None

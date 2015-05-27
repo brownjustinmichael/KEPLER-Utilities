@@ -100,7 +100,7 @@ class Isotope(object):
         return self.string
         
     def __repr__ (self):
-        return self.string
+        return "<Isotope %s>" % self.string
         
     def getLabel (self, inMath = False):
         """
