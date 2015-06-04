@@ -9,15 +9,14 @@ from kepler_utils.plots.yields import YieldPlot
 
 import matplotlib.pyplot as plt
 
-import argparse
+from kepler_utils.plots.parser import PlotArgumentParser
 
-parser = argparse.ArgumentParser ()
+parser = PlotArgumentParser (False)
 parser.add_argument ('--isotopes', dest = 'elements', action = 'store_false')
 parser.set_defaults (elements = True)
 parser.add_argument ('--ia', default = None)
 parser.add_argument ('--upper', default = None)
 parser.add_argument ('--lower', default = None)
-parser.add_argument ('--output', default = None)
 parser.add_argument ('yields', default = "yields/yields_w18/")
 parser.add_argument ('plots', nargs = "*", type = int)
 
@@ -34,12 +33,14 @@ imf = IMFIntegrator.from_yieldreader (yr)
 # Grab the yields from our Ia model of choice; if using the w7 model, we'll need to be more explicit since it isn't stored in a kepler yield format
 typeiayr = None
 if namespace.ia == "ia":
-    typeiayr = YieldReader (directory = "yields/1a/")
+    typeiayr = YieldReader.from_file ("yields/1a/1pi1a.yield", 0.0 * u.solMass)
 if namespace.ia == "w7":
-    typeiayr = YieldReader (directory = "yields/w7/", keplerYield = False, totalYieldName = "W7")
+    typeiayr = YieldReader.from_file ("yields/w7/iwamoto.dat", keplerYield = False, totalYieldName = "W7")
     
+print (typeiayr)
+
 if typeiayr is not None:
-    typeiaimf = Integrator ([1.0])
+    typeiaimf = Integrator (u.Quantity ([0.0 * u.solMass]), [1.0])
 
 # Specify the upper and lower limits of integration; beware that non-IMF objects (such as Type Ias) do not have masses in the system and thus will be included regardless of these limits
 imfUpperLimit = None if namespace.upper is None else (float (namespace.upper) * u.solMass)
@@ -67,7 +68,7 @@ for b, ls, marker, color in [(1.0, "-", "o", "g"), (0.5, "--", "s", "r"), (0.0, 
     final_yr = yr + b * wyr
     
     if typeiayr is None:
-        a = 0.0
+        a = 1.0
     else:
         a, final_imf, final_yr = final_imf.makeSolar ("o16", "fe56", other = typeiaimf, yr = final_yr, other_yr = typeiayr)
 
@@ -75,7 +76,7 @@ for b, ls, marker, color in [(1.0, "-", "o", "g"), (0.5, "--", "s", "r"), (0.0, 
     yp = YieldPlot (final_yr, imfIntegrator = final_imf)
 
     for ax, plot in zip (axes, plots):
-        lines1 = yp.plot (ax, removeIsotopes = ["al26", "k40", "fe60"], ls = ls, names = first, marker = marker, ms = 10, alpha = 0.75, relativeIso = "o16", imfUpperLimit = imfUpperLimit, imfLowerLimit = imfLowerLimit, elements = elements, label = "Exp+" + ("Ia+" if a != 0.0 else "") + "%s*Winds" % b)
+        lines1 = yp.plot (ax, removeIsotopes = ["al26", "k40", "fe60"], ls = ls, names = first, marker = marker, ms = 10, alpha = 0.75, relativeIso = "o16", imfUpperLimit = imfUpperLimit, imfLowerLimit = imfLowerLimit, elements = elements, label = "Exp+" + ("Ia+" if a != 0.0 else "") + "%s*Winds" % b, moveLabels = {"Na": (0.5, 0.8), "Ca": (1, 1.0), "B": (0.5, 0.0), "Ar": (1, 0.0), "Sc": (-1.0, -10.0), "Mn": (0.0, -10.0), "Fe": (-1.5, 0.0), "Co": (-0.0, -10.0), "Ni": (-0.5, 0.0), "Ga": (-1.0, 0.0), "Se": (1.0, 0.0), "Rb": (0.5, 0.0), "As": (-0.5, 0.0)})
 
         ax.set_ylim ((0.03,10))
         ax.set_xlim (xlim [plot])
@@ -89,7 +90,4 @@ for b, ls, marker, color in [(1.0, "-", "o", "g"), (0.5, "--", "s", "r"), (0.0, 
 
     first = False
 
-if namespace.output:
-    plt.savefig (namespace.output)
-else:
-    plt.show ()
+parser.exit (fig)

@@ -99,7 +99,7 @@ class YieldPlot (object):
                     current = (current [0], current [1] * 10.0 ** (minDist / 10))
                 annotationLocations.append (current)
 
-                ax.annotate (z [2], xy = (z [0] [i], z [1] [i]), xycoords = "data", xytext = (current [0], current [1]), textcoords = "data", arrowprops=dict (arrowstyle = "->"))
+                ax.annotate (z [2], xy = (z [0] [i], z [1] [i]), xycoords = "data", xytext = (current [0], current [1]), textcoords = "data", arrowprops=dict (arrowstyle = "->"), fontsize = 18)
 
         ax.set_yscale ("log")
         

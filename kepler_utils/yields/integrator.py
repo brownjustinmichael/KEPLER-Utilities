@@ -40,10 +40,10 @@ class Integrator (object):
         freq = np.concatenate ((self.freq, other.freq))
         normalize = np.concatenate ((self.normalize, other.normalize))
         sort_by = np.concatenate ((self.sort_by, other.sort_by))
-        return Integrator (freq, normalize, sort_by = sort_by)
+        return Integrator (u.Quantity (np.concatenate ((self.masses, other.masses))), freq, normalize, sort_by = sort_by)
         
     def __mul__ (self, scalar):
-        return Integrator (self.freq, scalar * self.normalize, sort_by = self.sort_by)
+        return Integrator (self.masses, self.freq, scalar * self.normalize, sort_by = self.sort_by)
         
     __rmul__ = __mul__
         
@@ -101,9 +101,7 @@ class IMFIntegrator (Integrator):
         # We assume here that the coverage is continuous
         
         total = ((max (massArray) ** (alpha + 1.0) - min (massArray) ** (alpha + 1.0)) / (alpha + 1.0) * kwargs.get ("normalize", 1.0)).value
-        print (total)
-        print ((1.0 + (((np.sum (numberArray) - total) / total) if total != 0.0 else 0.0)))
-
+        
         super (IMFIntegrator, self).__init__ (u.Quantity (massArray [:]), numberArray, normalize = (1.0 + (((np.sum (numberArray) - total) / total) if total != 0.0 else 0.0)))
         
     @classmethod

@@ -47,11 +47,7 @@ if namespace.checkcache:
         except AttributeError:
             caches.append (key)
 
-    condition = False
-    for state in namespace.states:
-        condition = or_ (condition, DumpFileEntry.state == state)
-            
-    cache (session, q.add_entity (SimulationEntry).filter (condition).all (), {cache: getattr (kepler_utils.database.cache, cache) for cache in caches}, states = [state for state in namespace.states])
+    cache (session, q.add_entity (SimulationEntry).filter (DumpFileEntry.complete).all (), {cache: getattr (kepler_utils.database.cache, cache) for cache in caches}, states = [state for state in namespace.states])
 
 for i, ykey, axisList in zip (range (len (namespace.ykeys)), namespace.ykeys, axes):
     axisList [0].set_ylabel (ykey)

@@ -59,7 +59,7 @@ class CorePlot (object):
                 minimum = np.min (kwargs ["s"])
                 maximum = np.max (kwargs ["s"])
                 if minimum != maximum:
-                    kwargs ["s"] = (kwargs ["s"] - minimum) / (maximum - minimum) * 100 + 20
+                    kwargs ["s"] = (kwargs ["s"] - minimum) / (maximum - minimum) * 100 + 40
                 else:
                     kwargs ["s"] = 200
         if ckey is not None:
