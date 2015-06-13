@@ -1,0 +1,105 @@
+ncyc	int	1	1	The current cycle number
+timesec	float	1	s	The current time
+dt	float	1	s	The current timestep
+nconv	int	1	1	The length of the convection array
+nnuc	int	1	1	The length of the nuclear energy generation array
+nnuk
+nneu
+nnucd
+nnukd
+nneud
+ncoord	int	1	1	The length of the coordinate arrays
+idx_kind_len	int	1	1	The length of the nuclear index array
+nuc_kind_len	int	1	1	The length of the nuclear generation kind array
+nuc	float	nnuc	1	An array of the energy generation in log space with unit erg/s
+nuk
+neu
+nucd
+nukd
+neud
+yzip	str	nconv	1	An array containing the convection information as "C" for convection, "S" for semi-convection, "O" for overshooting convection, "T" for thermohaline convection, or " " for radiation
+xmcoord	float	ncoord	g	An array of mass coordinates through the star
+rncoord	float	ncoord	cm	An array of radial coordinates through the star
+ladv
+iadv
+dmadv
+dvadv
+
+inuc	int	nnuc	1	The indices of the nuclear array in the coordinate arrays
+inuk
+ineu
+inucd
+inukd
+ineud
+iconv	int	nnuc	1	The indices of the convection array in the coordinate arrays
+
+levcnv
+minloss
+mingain
+minnucl
+minnucg
+minneul
+minneug
+
+minlossd
+mingaind
+minnucld
+minnucgd
+minneuld
+minneugd
+
+tc	float	1	K	The central temperature
+dc	float	1	g/cm^3	The central density
+pc	float	1	erg/cm^3	The centeral pressure
+ec	float 1	
+sc	float	1
+ye	float	1	1	The central electron fraction
+ab
+
+et
+sn
+su
+g1
+g2
+s1
+s2
+
+aw
+summ0	float	1	g	The mass contained within the inner radius
+radius0	float	1	cm	The radius of the innermost zone
+an
+
+abun
+
+eni
+enk
+enp
+ent
+epro
+enn
+enr
+ensc
+enes
+enc
+enpist
+enid
+enkd
+enpd
+entd
+eprod
+xlumn
+enrd
+enscd
+enesd
+encd
+enpistd
+xlum
+xlum0
+entloss
+eniloss
+enkloss
+enploss
+enrloss
+angit
+anglt
+xmacc
